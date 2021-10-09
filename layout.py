@@ -93,9 +93,6 @@ controls = dbc.FormGroup(
                 dcc.Markdown(d("""
                 **Attribute to Search**.
                 """)),
-                dcc.Markdown(d("""
-                **Attribute to Search**.
-                """)),
                 dcc.Input(id="input_attr", 
                           type="text", placeholder="Attribute"),
                 html.Div(id="output_attr")
@@ -223,8 +220,32 @@ content_second_row = dbc.Row(
     [
         dbc.Col(
             dcc.Graph(id='centrality_graph',
-                     figure = mg.network_to_centrality()), 
+                     figure = mg.network_to_centrality()[0]), 
                      md=12,
+                     
+        ),
+        dbc.Col(
+            dcc.Graph(id='centrality_degree_graph',
+                     figure = mg.network_to_centrality()[1]), 
+                     md=6,
+                     
+        ),
+        dbc.Col(
+            dcc.Graph(id='centrality_weighted_degree_graph',
+                     figure = mg.network_to_centrality()[2]), 
+                     md=6,
+                     
+        ),
+        dbc.Col(
+            dcc.Graph(id='centrality_closeness_graph',
+                     figure = mg.network_to_centrality()[3]), 
+                     md=6,
+                     
+        ),
+        dbc.Col(
+            dcc.Graph(id='centrality_between_graph',
+                     figure = mg.network_to_centrality()[4]), 
+                     md=6,
                      
         ),
     ],
