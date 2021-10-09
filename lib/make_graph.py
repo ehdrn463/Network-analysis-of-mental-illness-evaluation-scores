@@ -14,11 +14,11 @@ import base64
 from dash import html
 from dash import dash_table
 from colour import Color
-# from inverse_covariance import QuicGraphicalLassoEBIC
+from inverse_covariance import QuicGraphicalLassoEBIC
 
 # def initialize_graph():
 global raw, raw_df
-raw = round(pd.read_csv('../data/psp_swn_weight_ggg_v2.csv', index_col=0), 3)
+raw = round(pd.read_csv(r'/Users/gimdong-gu/Desktop/mind_detector_v3/Network-analysis-of-mental-illness-evaluation-scores/data/psp_swn_weight_ggg_v2.csv', index_col=0), 3)
 raw_v2 = raw.copy()
 raw_v2.insert(0, 'attr', raw.columns, allow_duplicates=False)
 

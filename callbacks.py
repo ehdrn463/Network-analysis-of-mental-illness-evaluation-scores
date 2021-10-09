@@ -8,10 +8,12 @@ from dash.dependencies import Input, Output, State
 def update_graph(contents, filename, contents2, filename2, input_attr):
     # attr에 ggm을 적용해줌.
     if contents:
+        print(filename)
         df = mg.attr_to_ggm(contents, filename)
     elif contents2:
+        print(filename2)
         # corr matrix는 바로 읽음 ( GGM 적용 X )
-        df = mg.download_file(contents, filename)
+        df = mg.download_file(contents2, filename2)
     # source, target, weight matrix로 변환
     target_df = mg.corr_to_target(df)
 
