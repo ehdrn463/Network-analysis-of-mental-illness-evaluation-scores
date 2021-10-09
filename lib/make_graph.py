@@ -233,10 +233,16 @@ def network_to_centrality(input_graph=basic_graph, normalized=False):
     '''
     fig = go.Figure()
     fig.update_layout(
-        title="The Result of Node Centrality Analysis",
-        margin={'b': 40, 'l': 40, 'r': 40, 't': 40},
+        title= {
+            "text": "The Result of Node Centrality Analysis",
+            "xanchor" : "center",
+            "yanchor": "top"
+        },
         autosize=True,
-        height=600,)
+        height=600
+    )
+
+
     # degree_centrality
     '''
     input: graph-networkx.Grpah
@@ -246,7 +252,14 @@ def network_to_centrality(input_graph=basic_graph, normalized=False):
     degree_cent = dict(sorted(degree_cent.items(), key=lambda item:item[1]))
     fig.add_trace(go.Scatter(x=list(degree_cent.values()), y= list(degree_cent.keys()), mode="lines+markers", name="degree", marker_color="#19D3F3"))
     degree_cent_fig = go.Figure(data=[go.Scatter(x=list(degree_cent.values()), y=list(degree_cent.keys()), mode="lines+markers", name="degree", marker_color="#19D3F3")])
-    
+    degree_cent_fig.update_layout(
+        title = {
+            'text': "degree",
+            "xanchor": 'center',
+            'yanchor': 'top'
+        }
+    )
+
     # weight_centrality
     weight_cent = {n:0.0 for n in input_graph.nodes()}
     for u, v, d in input_graph.edges(data=True):
@@ -261,7 +274,16 @@ def network_to_centrality(input_graph=basic_graph, normalized=False):
     else:
         fig.add_trace(go.Scatter(x=list(weight_cent.values()), y= list(weight_cent.keys()), mode="lines+markers", name="weighted degree", marker_color="#00CC96"))     
         weighted_cent_fig = go.Figure(data=[go.Scatter(x=list(weight_cent.values()), y=list(weight_cent.keys()), mode="lines+markers", name="weighted closeness", marker_color="#00CC96")])
-                   
+
+    weighted_cent_fig.update_layout(
+        title = {
+            'text': "weighted degree",
+            "xanchor": 'center',
+            'yanchor': 'top'
+        }
+    )
+
+
     # closeness_centrality
     '''
     input: graph-networkx.Grpah
@@ -271,7 +293,15 @@ def network_to_centrality(input_graph=basic_graph, normalized=False):
     closeness_cent = dict(sorted(closeness_cent.items(), key=lambda item:item[1]))
     fig.add_trace(go.Scatter(x=list(closeness_cent.values()), y= list(closeness_cent.keys()), mode="lines+markers", name="closeness", marker_color="#FF6692"))
     closeness_cent_fig = go.Figure(data=[go.Scatter(x=list(closeness_cent.values()), y=list(closeness_cent.keys()), mode="lines+markers", name="closeness", marker_color="#FF6692")])
-    
+    closeness_cent_fig.update_layout(
+        title = {
+            'text': "closeness",
+            "xanchor": 'center',
+            'yanchor': 'top'
+        }
+    )
+
+
     # betweenness_centrality
     '''
     input: graph-networkx.Grpah
@@ -282,6 +312,13 @@ def network_to_centrality(input_graph=basic_graph, normalized=False):
     between_cent = dict(sorted(between_cent.items(), key=lambda item:item[1]))
     fig.add_trace(go.Scatter(x=list(between_cent.values()), y= list(between_cent.keys()), mode="lines+markers", name="betweenness", marker_color="#AB63FA"))  
     between_cent_fig = go.Figure(data=[go.Scatter(x=list(between_cent.values()), y=list(between_cent.keys()), mode="lines+markers", name="between", marker_color="#AB63FA")])
+    between_cent_fig.update_layout(
+        title = {
+            'text': "between",
+            "xanchor": 'center',
+            'yanchor': 'top'
+        }
+    )
 
     # eigenvector_cntrality
     '''
