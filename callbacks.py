@@ -4,14 +4,14 @@ from dash.dependencies import Input, Output, State
 
 @app.callback(
     [Output('network_graph', 'figure'), Output('centrality_graph', 'figure'), Output('ggm_table', 'children')],
-    [Input('upload-file', 'contents'), Input('upload-file', 'filename'), Input('upload-corr-file', 'contents'), Input('upload-corr-file', 'filename'), Input('input_attr', 'value')])
-def update_graph(contents, filename, contents2, filename2, input_attr):
+    [Input('upload-file', 'contents'), Input('upload-file', 'filename'), Input('upload-corr-file', 'contents'), Input('upload-corr-file', 'filename')])
+def update_graph(contents, filename, contents2, filename2):
     # attr에 ggm을 적용해줌.
+    print('='*5, filename)
+    print('='*5, filename2)
     if contents:
-        print(filename)
         df = mg.attr_to_ggm(contents, filename)
     elif contents2:
-        print(filename2)
         # corr matrix는 바로 읽음 ( GGM 적용 X )
         df = mg.download_file(contents2, filename2)
     # source, target, weight matrix로 변환
@@ -27,6 +27,7 @@ def update_graph(contents, filename, contents2, filename2, input_attr):
     centrality_graph_fig = mg.network_to_centrality(input_graph)
     
     return network_graph_fig, centrality_graph_fig, mg.make_ggm_table(df)
+
 
 
 

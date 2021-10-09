@@ -448,11 +448,11 @@ def attr_to_ggm(contents, filename):
 
     # column name 추출
     columnName = list(df.columns.values)
-
+    print(columnName)
     # best_alpha 계산
     # gamma 값 0.1로 설정해두었으나 변경 가능합니다.
     best_alpha = compute_Best_Alpha(df) 
-
+    print('best_alpha: ', best_alpha)
     # best_alpha 이용해서 QuicGraphicalLasso 계산, model 구축
     estimator = QuicGraphicalLassoEBIC(lam=best_alpha, auto_scale = False, 
                                        verbose=1, tol = 1e-04,
