@@ -11,15 +11,14 @@ from dash_extensions.snippets import send_bytes
 
 
 
-
 @app.callback(
     [Output('network_graph', 'figure'), Output('centrality_graph', 'figure'), Output('ggm_table', 'children')],
-    [Input('upload-file', 'contents'), Input('upload-file', 'filename'), Input('upload-corr-file', 'contents'), Input('upload-corr-file', 'filename')])
+    [Input('upload-file', 'contents'), Input('upload-file', 'filename'), Input('upload-corr-file', 'contents'), Input('upload-corr-file', 'filename')]
+)
 def update_graph(contents, filename, contents2, filename2):
     # attr에 ggm을 적용해줌.
-    print('='*5, filename)
-    print('='*5, filename2)
-    if (not contents) or (not contents2):
+    
+    if (not contents) and (not contents2):
         raise PreventUpdate
     if contents:
         df = mg.attr_to_ggm(contents, filename)
@@ -59,12 +58,10 @@ def download_corr_matrix_as_csv(csv_clicks, xlsx_clicks, corr_table_data):
             temp_columns.append(col)
 
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-    print(changed_id)
     # change_xlsx = [p['xlsx-corr-matrix-save-button'] for p in dash.callback_context.triggered][0]
 
     # print(change_xlsx)
     if 'corr-matrix-save-button.n_clicks' == changed_id:
-        print('csv')
         df.to_csv(download_buffer, index=False, columns = temp_columns)
         download_buffer.seek(0)
         return dict(content=download_buffer.getvalue(), filename="corr_matrix.csv")

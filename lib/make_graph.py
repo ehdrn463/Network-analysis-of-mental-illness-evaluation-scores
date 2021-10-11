@@ -73,7 +73,8 @@ def generate_network_graph(target_df = raw_df, specific_attr=None):
     '''
     target_df(pandas dataframe) -> plotly.go
     '''
-    
+    print(specific_attr)
+
     attrSet = set(list(target_df.columns))
     
     # networkx layout 배치를위한 중심점 정의
@@ -116,7 +117,7 @@ def generate_network_graph(target_df = raw_df, specific_attr=None):
                                 mode= "markers+text",
                                 marker={'size': 25, 'color': 'LightSkyBlue'},
                                 opacity = 0)
-
+        traceRecode.append(node_trace)
         node_trace1 = go.Scatter(x=tuple([1]), y=tuple([1]),
                                 mode='markers',
                                 marker={'size': 25, 'color': 'LightSkyBlue'},
@@ -125,7 +126,7 @@ def generate_network_graph(target_df = raw_df, specific_attr=None):
 
         figure = {
             "data": traceRecode,
-            "layout": go.Layout(title='Network Analaysis', showlegend=False,
+            "layout": go.Layout(title='Network Analaysis Applied Search', showlegend=False,
                                 margin={'b': 40, 'l': 40, 'r': 40, 't': 40},
                                 xaxis={'showgrid': False, 'zeroline': False, 'showticklabels': False},
                                 yaxis={'showgrid': False, 'zeroline': False, 'showticklabels': False},
