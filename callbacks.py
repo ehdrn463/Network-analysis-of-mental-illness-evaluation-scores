@@ -1,12 +1,13 @@
 import pandas as pd
 import io
 
-
-
+import dash
+from dash import dcc
 from dash.exceptions import PreventUpdate
 from app import app
 from lib import make_graph as mg
 from dash.dependencies import Input, Output, State
+from dash_extensions.snippets import send_bytes
 
 
 
@@ -43,23 +44,33 @@ def update_graph(contents, filename, contents2, filename2):
 
 @app.callback(
     Output("corr-matrix-download", "data"),
-    Input("corr-matrix-save-button", "n_clicks"),
+    [Input("corr-matrix-save-button", "n_clicks"), Input("xlsx-corr-matrix-save-button", "n_clicks")],
     State("corr-table", "data")
 )
-def download_corr_matrix_as_csv(n_clicks, corr_table_data):
+def download_corr_matrix_as_csv(csv_clicks, xlsx_clicks, corr_table_data):
     df = pd.DataFrame.from_dict(corr_table_data)
-    if not n_clicks:
+
+    if (not csv_clicks) and (not xlsx_clicks):
         raise PreventUpdate
     download_buffer = io.StringIO()
     temp_columns = ['Attr']
     for col in df.columns:
         if col != 'Attr':
             temp_columns.append(col)
-    df.to_csv(download_buffer, index=False, columns = temp_columns)
-    download_buffer.seek(0)
-    return dict(content=download_buffer.getvalue(), filename="corr_matrix.csv")
 
+    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+    print(changed_id)
+    # change_xlsx = [p['xlsx-corr-matrix-save-button'] for p in dash.callback_context.triggered][0]
 
+    # print(change_xlsx)
+    if 'corr-matrix-save-button.n_clicks' == changed_id:
+        print('csv')
+        df.to_csv(download_buffer, index=False, columns = temp_columns)
+        download_buffer.seek(0)
+        return dict(content=download_buffer.getvalue(), filename="corr_matrix.csv")
+    elif 'xlsx-corr-matrix-save-button.n_clicks' == changed_id:
+        return dcc.send_data_frame(df.to_excel, filename="corr_matrix.xlsx", index= False)
+        
 
 # @app.callback(
 #     Output("corr-matrix-download", "data"),

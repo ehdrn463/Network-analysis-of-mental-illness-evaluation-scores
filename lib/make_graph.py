@@ -532,6 +532,7 @@ def make_ggm_table(ggm_matrix=raw_v2):
             dcc.Download(id="corr-matrix-download"),
             html.Label("The Result of Gaussian Graphical Model Analaysis"),
             html.Button("Save Matrix as CSV", id="corr-matrix-save-button"),
+            html.Button("Save Matrix as XLSX", id="xlsx-corr-matrix-save-button"),
             dash_table.DataTable(
                 id = "corr-table",
                 columns=[{"name": str(i), "id": str(i)} for i in ggm_matrix.columns],
