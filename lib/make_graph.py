@@ -11,9 +11,15 @@ import io
 import base64
 
 
+
 from dash import html
 from dash import dash_table
+# import dash_core_components as dcc
+from dash import dcc
+
 from colour import Color
+from dash_extensions import Download
+from dash.exceptions import PreventUpdate
 from inverse_covariance import QuicGraphicalLassoEBIC
 
 # def initialize_graph():
@@ -520,8 +526,11 @@ def make_ggm_table(ggm_matrix=raw_v2):
          ggm_matrix.insert(0, 'attr', ggm_matrix.columns, allow_duplicates=False)
     return (html.Div(
         [
+            dcc.Download(id="corr-matrix-download"),
             html.Label("The Result of Gaussian Graphical Model Analaysis"),
+            html.Button("Save Matrix as CSV", id="corr-matrix-save-button"),
             dash_table.DataTable(
+                id = "corr-table",
                 columns=[{"name": str(i), "id": str(i)} for i in ggm_matrix.columns],
                 data=ggm_matrix.to_dict("records"),
                 style_data={

@@ -1,36 +1,13 @@
+import pandas as pd
+import io
+
+
+from dash.exceptions import PreventUpdate
 from app import app
 from lib import make_graph as mg
 from dash.dependencies import Input, Output, State
 
 
-# @app.callback(
-#     [Output('network_graph', 'figure'), Output('centrality_graph', 'figure'), Output('ggm_table', 'children')],
-#     [Input('upload-file', 'contents'), Input('upload-file', 'filename'), Input('upload-corr-file', 'contents'), Input('upload-corr-file', 'filename'), Input("input_attr", "value")])
-# def update_graph(contents, filename, contents2, filename2, input_attr):
-#     # attr에 ggm을 적용해줌.
-#     print('='*5, filename)
-#     print('='*5, filename2)
-#     if contents:
-#         df = mg.attr_to_ggm(contents, filename)
-#     elif contents2:
-#         # corr matrix는 바로 읽음 ( GGM 적용 X )
-#         df = mg.download_file(contents2, filename2)
-#     # source, target, weight matrix로 변환
-#     target_df = mg.corr_to_target(df)
-
-#     # network analaysis 진행
-#     if input_attr:
-#         network_graph_fig = mg.generate_network_graph(target_df, input_attr)
-#     else:
-#         network_graph_fig = mg.generate_network_graph(target_df)
-
-#     # networkx graph객체로 변환
-#     input_graph = mg.target_to_graph(target_df)
-    
-#     # 중심성 계산
-#     centrality_graph_fig = mg.network_to_centrality(input_graph)
-    
-#     return network_graph_fig, centrality_graph_fig, mg.make_ggm_table(df)
 
 
 @app.callback(
@@ -40,6 +17,8 @@ def update_graph(contents, filename, contents2, filename2):
     # attr에 ggm을 적용해줌.
     print('='*5, filename)
     print('='*5, filename2)
+    if (not contents) or (not contents2):
+        raise PreventUpdate
     if contents:
         df = mg.attr_to_ggm(contents, filename)
     elif contents2:
@@ -58,6 +37,23 @@ def update_graph(contents, filename, contents2, filename2):
     centrality_graph_fig = mg.network_to_centrality(input_graph)
     
     return network_graph_fig, centrality_graph_fig, mg.make_ggm_table(df)
+
+
+
+@app.callback(
+    Output("corr-matrix-download", "data"),
+    Input("corr-matrix-save-button", "n_clicks"),
+    State("corr-table", "data")
+)
+def download_corr_matrix_as_csv(n_clicks, corr_table_data):
+    df = pd.DataFrame.from_dict(corr_table_data)
+    if not n_clicks:
+        raise PreventUpdate
+    download_buffer = io.StringIO()
+    df.to_csv(download_buffer, index=True, columns = df.columns)
+    download_buffer.seek(0)
+    return dict(content=download_buffer.getvalue(), filename="corr_matrix.csv")
+
 
 # @app.callback(
 #     [Output('network_graph', 'figure')],
@@ -112,6 +108,34 @@ def update_graph(contents, filename, contents2, filename2):
 
 
 
+# @app.callback(
+#     [Output('network_graph', 'figure'), Output('centrality_graph', 'figure'), Output('ggm_table', 'children')],
+#     [Input('upload-file', 'contents'), Input('upload-file', 'filename'), Input('upload-corr-file', 'contents'), Input('upload-corr-file', 'filename'), Input("input_attr", "value")])
+# def update_graph(contents, filename, contents2, filename2, input_attr):
+#     # attr에 ggm을 적용해줌.
+#     print('='*5, filename)
+#     print('='*5, filename2)
+#     if contents:
+#         df = mg.attr_to_ggm(contents, filename)
+#     elif contents2:
+#         # corr matrix는 바로 읽음 ( GGM 적용 X )
+#         df = mg.download_file(contents2, filename2)
+#     # source, target, weight matrix로 변환
+#     target_df = mg.corr_to_target(df)
+
+#     # network analaysis 진행
+#     if input_attr:
+#         network_graph_fig = mg.generate_network_graph(target_df, input_attr)
+#     else:
+#         network_graph_fig = mg.generate_network_graph(target_df)
+
+#     # networkx graph객체로 변환
+#     input_graph = mg.target_to_graph(target_df)
+    
+#     # 중심성 계산
+#     centrality_graph_fig = mg.network_to_centrality(input_graph)
+    
+#     return network_graph_fig, centrality_graph_fig, mg.make_ggm_table(df)
 
 
 
