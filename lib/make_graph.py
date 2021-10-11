@@ -237,16 +237,27 @@ def network_to_centrality(input_graph=basic_graph, normalized=False):
     '''
     input_graph(networkx graph object) -> centrality plot
     '''
-    fig = go.Figure()
-    fig.update_layout(
+    temp_layout = go.Layout(
         title= {
             "text": "The Result of Node Centrality Analysis",
             "xanchor" : "center",
-            "yanchor": "top"
+            "yanchor": "top",
+            'x': 0.55,
         },
         autosize=True,
         height=600
     )
+    fig = go.Figure(layout=temp_layout)
+
+    # fig.update_layout(
+    #     title= {
+    #         "text": "The Result of Node Centrality Analysis",
+    #         "xanchor" : "left",
+    #         "yanchor": "top"
+    #     },
+    #     autosize=True,
+    #     height=600
+    # )
 
 
     # degree_centrality
@@ -257,14 +268,17 @@ def network_to_centrality(input_graph=basic_graph, normalized=False):
     degree_cent = nx.degree_centrality(input_graph)
     degree_cent = dict(sorted(degree_cent.items(), key=lambda item:item[1]))
     fig.add_trace(go.Scatter(x=list(degree_cent.values()), y= list(degree_cent.keys()), mode="lines+markers", name="degree", marker_color="#19D3F3"))
-    degree_cent_fig = go.Figure(data=[go.Scatter(x=list(degree_cent.values()), y=list(degree_cent.keys()), mode="lines+markers", name="degree", marker_color="#19D3F3")])
-    degree_cent_fig.update_layout(
+    
+    degree_layout = go.Layout(
         title = {
-            'text': "degree",
+            'text': "Degree Centrality",
             "xanchor": 'center',
-            'yanchor': 'top'
+            'yanchor': 'top',
+            'x': 0.55,
         }
     )
+    degree_cent_fig = go.Figure(layout=degree_layout, data=[go.Scatter(x=list(degree_cent.values()), y=list(degree_cent.keys()), mode="lines+markers", name="degree", marker_color="#19D3F3")])
+
 
     # weight_centrality
     weight_cent = {n:0.0 for n in input_graph.nodes()}
@@ -283,10 +297,11 @@ def network_to_centrality(input_graph=basic_graph, normalized=False):
 
     weighted_cent_fig.update_layout(
         title = {
-            'text': "weighted degree",
+            'text': "Weighted degree Centrality",
             "xanchor": 'center',
-            'yanchor': 'top'
-        }
+            'yanchor': 'top',
+            'x': 0.55,
+        },
     )
 
 
@@ -301,9 +316,10 @@ def network_to_centrality(input_graph=basic_graph, normalized=False):
     closeness_cent_fig = go.Figure(data=[go.Scatter(x=list(closeness_cent.values()), y=list(closeness_cent.keys()), mode="lines+markers", name="closeness", marker_color="#FF6692")])
     closeness_cent_fig.update_layout(
         title = {
-            'text': "closeness",
+            'text': "Closeness Centrality",
             "xanchor": 'center',
-            'yanchor': 'top'
+            'yanchor': 'top',
+            'x': 0.55,
         }
     )
 
@@ -320,9 +336,10 @@ def network_to_centrality(input_graph=basic_graph, normalized=False):
     between_cent_fig = go.Figure(data=[go.Scatter(x=list(between_cent.values()), y=list(between_cent.keys()), mode="lines+markers", name="between", marker_color="#AB63FA")])
     between_cent_fig.update_layout(
         title = {
-            'text': "between",
+            'text': "Between Centrality",
             "xanchor": 'center',
-            'yanchor': 'top'
+            'yanchor': 'top',
+            'x': 0.55,
         }
     )
 
@@ -530,7 +547,7 @@ def make_ggm_table(ggm_matrix=raw_v2):
     return (html.Div(
         [
             dcc.Download(id="corr-matrix-download"),
-            html.Label("The Result of Gaussian Graphical Model Analaysis"),
+            html.Label("The Result of Gaussian Graphical Model Analaysis", style={'font-size': 20, 'font-weight': True}),
             html.Button("Save Matrix as CSV", id="corr-matrix-save-button"),
             html.Button("Save Matrix as XLSX", id="xlsx-corr-matrix-save-button"),
             dash_table.DataTable(
