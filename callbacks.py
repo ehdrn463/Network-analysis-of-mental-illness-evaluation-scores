@@ -2,6 +2,7 @@ import pandas as pd
 import io
 
 
+
 from dash.exceptions import PreventUpdate
 from app import app
 from lib import make_graph as mg
@@ -50,9 +51,29 @@ def download_corr_matrix_as_csv(n_clicks, corr_table_data):
     if not n_clicks:
         raise PreventUpdate
     download_buffer = io.StringIO()
-    df.to_csv(download_buffer, index=True, columns = df.columns)
+    temp_columns = ['Attr']
+    for col in df.columns:
+        if col != 'Attr':
+            temp_columns.append(col)
+    df.to_csv(download_buffer, index=False, columns = temp_columns)
     download_buffer.seek(0)
     return dict(content=download_buffer.getvalue(), filename="corr_matrix.csv")
+
+
+
+# @app.callback(
+#     Output("corr-matrix-download", "data"),
+#     Input("corr-matrix-save-button", "n_clicks"),
+#     State("corr-table", "data")
+# )
+# def download_corr_matrix_as_csv2(n_clicks, corr_table_data):
+#     df = pd.DataFrame.from_dict(corr_table_data)
+#     if not n_clicks:
+#         raise PreventUpdate
+#     download_buffer = io.StringIO()
+#     df.to_csv(download_buffer, index=True)
+#     download_buffer.seek(0)
+#     return dict(content=download_buffer.getvalue(), filename="corr_matrix.csv")
 
 
 # @app.callback(

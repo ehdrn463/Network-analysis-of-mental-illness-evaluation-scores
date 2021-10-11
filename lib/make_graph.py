@@ -26,7 +26,7 @@ from inverse_covariance import QuicGraphicalLassoEBIC
 global raw, raw_df
 raw = round(pd.read_csv(r'/Users/gimdong-gu/Desktop/mind_detector_v3/Network-analysis-of-mental-illness-evaluation-scores/data/psp_swn_weight_ggg_v2.csv', index_col=0), 3)
 raw_v2 = raw.copy()
-raw_v2.insert(0, 'attr', raw.columns, allow_duplicates=False)
+raw_v2.insert(0, 'Attr', raw.columns, allow_duplicates=False)
 
 
 # 정신질환 질문 속성
@@ -522,8 +522,11 @@ def make_ggm_table(ggm_matrix=raw_v2):
     '''
     ggm_matrix -> table 객체
     '''
-    if 'attr' not in ggm_matrix.columns:
-         ggm_matrix.insert(0, 'attr', ggm_matrix.columns, allow_duplicates=False)
+    # save_df = ggm_matrix.copy()
+    print(ggm_matrix.columns)
+    if 'Attr' not in ggm_matrix.columns:
+         ggm_matrix.insert(0, 'Attr', ggm_matrix.columns, allow_duplicates=False)
+         
     return (html.Div(
         [
             dcc.Download(id="corr-matrix-download"),
