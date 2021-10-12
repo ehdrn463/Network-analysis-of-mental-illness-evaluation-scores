@@ -49,12 +49,12 @@ def corr_to_target(df):
     '''
     pandas.dataframe(corr) -> weight
     '''
-    print('df', df.columns) 
+    # print('df', df.columns) 
     target_df = pd.DataFrame.from_dict(df)
     target_df = target_df.stack().reset_index()
     target_df.columns = ['source', 'target', 'weight']
     target_df.drop(target_df[abs(target_df.weight) < 0.01].index, inplace=True)
-    print('target_df', target_df)
+    # print('target_df', target_df)
     
     return target_df
 
@@ -73,7 +73,7 @@ def generate_network_graph(target_df = raw_df, specific_attr=None):
     '''
     target_df(pandas dataframe) -> plotly.go
     '''
-    print(specific_attr)
+    # print(specific_attr)
 
     attrSet = set(list(target_df.columns))
     
@@ -238,27 +238,18 @@ def network_to_centrality(input_graph=basic_graph, normalized=False):
     '''
     input_graph(networkx graph object) -> centrality plot
     '''
-    temp_layout = go.Layout(
+    fig = go.Figure()
+
+    fig.update_layout(
         title= {
             "text": "The Result of Node Centrality Analysis",
-            "xanchor" : "center",
+            "xanchor" : "left",
             "yanchor": "top",
             'x': 0.55,
         },
         autosize=True,
         height=600
     )
-    fig = go.Figure(layout=temp_layout)
-
-    # fig.update_layout(
-    #     title= {
-    #         "text": "The Result of Node Centrality Analysis",
-    #         "xanchor" : "left",
-    #         "yanchor": "top"
-    #     },
-    #     autosize=True,
-    #     height=600
-    # )
 
 
     # degree_centrality
@@ -268,9 +259,11 @@ def network_to_centrality(input_graph=basic_graph, normalized=False):
     '''
     degree_cent = nx.degree_centrality(input_graph)
     degree_cent = dict(sorted(degree_cent.items(), key=lambda item:item[1]))
+    print(degree_cent)
     fig.add_trace(go.Scatter(x=list(degree_cent.values()), y= list(degree_cent.keys()), mode="lines+markers", name="degree", marker_color="#19D3F3"))
     
-    degree_layout = go.Layout(
+    degree_cent_fig = go.Figure(data=[go.Scatter(x=list(degree_cent.values()), y=list(degree_cent.keys()), mode="lines+markers", name="degree", marker_color="#19D3F3")])
+    degree_cent_fig.update_layout(
         title = {
             'text': "Degree Centrality",
             "xanchor": 'center',
@@ -278,8 +271,6 @@ def network_to_centrality(input_graph=basic_graph, normalized=False):
             'x': 0.55,
         }
     )
-    degree_cent_fig = go.Figure(layout=degree_layout, data=[go.Scatter(x=list(degree_cent.values()), y=list(degree_cent.keys()), mode="lines+markers", name="degree", marker_color="#19D3F3")])
-
 
     # weight_centrality
     weight_cent = {n:0.0 for n in input_graph.nodes()}
@@ -364,7 +355,7 @@ def network_to_centrality(input_graph=basic_graph, normalized=False):
         fig.add_trace(go.Scatter(x=list(between_cent.values()), y= list(between_cent.keys()), mode="lines+markers", name="between"))              
     except:
         print("pagerank centrality 오류")
-        
+    print(degree_cent_fig)
     return fig, degree_cent_fig, weighted_cent_fig, closeness_cent_fig, between_cent_fig
     
 
@@ -393,7 +384,7 @@ def download_file(contents, filename):
     df = df.dropna(axis=1, how='all')
     df = df.dropna(axis=0, how='any')
     
-    print(df.columns)
+    # print(df.columns)
     return df
     
 
@@ -512,7 +503,7 @@ def attr_to_ggm(contents, filename):
 
     # column name 추출
     columnName = list(df.columns.values)
-    print(columnName)
+    # print(columnName)
     # best_alpha 계산
     # gamma 값 0.1로 설정해두었으나 변경 가능합니다.
     best_alpha = compute_Best_Alpha(df) 
@@ -541,7 +532,7 @@ def make_ggm_table(ggm_matrix=raw_v2):
     ggm_matrix -> table 객체
     '''
     # save_df = ggm_matrix.copy()
-    print(ggm_matrix.columns)
+    # print(ggm_matrix.columns)
     if 'Attr' not in ggm_matrix.columns:
          ggm_matrix.insert(0, 'Attr', ggm_matrix.columns, allow_duplicates=False)
          

@@ -94,99 +94,90 @@ controls = dbc.FormGroup(
                 **Attribute to Search**.
                 """)),
                 dcc.Input(id="input_attr", 
-                          type="text", placeholder="Attribute"),
+                          type="text"), #, placeholder="Attribute"
                 html.Div(id="output_attr")
             ],
             style={'textAlign': 'center'}
         )
         ,
-        html.P('Dropdown', style = {
-            'textAlign': 'center'
-        }),
+        html.Br(),
+        # html.P('gamma', style = {
+        #     'textAlign': 'center'
+        # }),
+        dcc.Markdown(d("""
+        **EBIC: gamma**
+        """), style={'text-align': 'center'}),
         dcc.Dropdown(
-            id='dropdown',
+            id='dropdown-gamma',
             options = [ 
                 {
-                    'label': 'Value One',
-                    'value': 'value1'
+                    'label': '0.01',
+                    'value': 0.01
                 }, 
                 {
-                    'label': 'Value Twoo',
-                    'value': 'value2',
+                    'label': '0.1',
+                    'value': 0.1,
                 }, 
                 {
-                    'label': 'Value Three',
-                    'value': 'value3'
+                    'label': '0.5',
+                    'value': 0.5
                 },
             ],
-            value = ['value1'],
-            multi = True
+            value = [0.5],
+            multi = False,
         ),
         html.Br(),
-        html.P('Range Slider', style= {
-            'textAlign': 'center'
-        }),
-        dcc.RangeSlider(
-            id='range_slider',
-            min = 0,
-            max = 20,
-            step = 0.5,
-            value = [5, 15]
-        ),
-        html.P('Check Box', style={
-            'textAlign': 'center'
-        }),
-        dbc.Card([dbc.Checklist(
-            id='check_list',
-            options = [
+         dcc.Markdown(d("""
+        **Network Analysis Style**
+        """), style={'text-align': 'center'}),
+        dcc.Dropdown(
+            id='dropdown-graph',
+            options = [ 
                 {
-                    'label': 'Value One',
-                    'value': 'value1'
+                    'label': 'spring',
+                    'value': 'spring',
+                }, 
+                {
+                    'label': 'kamada_kawai',
+                    'value': 'kamada_kawai',
+                }, 
+                {
+                    'label': 'shell',
+                    'value': 'shell',
                 },
                 {
-                    'label': 'Value Two',
-                    'value': 'value2',
-                },
+                    'label': 'spectral',
+                    'value': 'spectral',
+                }, 
                 {
-                    'label': 'Value Three',
-                    'value': 'value3'
-                }
+                    'label': 'fruchterman',
+                    'value': 'fruchterman',
+                },
             ],
-            value = ['value1', 'value2'],
-            inline = True
-        )]),
-            dbc.Button(
-            id='submit_button',
-            n_clicks=0,
-            children='Submit',
-            color='primary',
-            block=True
+            value = ['shell'],
+            multi = False,
         ),
         html.Br(),
-        html.P('Radio Items', style={
-            'textAlign': 'center'
-        }),
-        dbc.Card([dbc.RadioItems(
-            id='radio_items',
-            options=[
-                {
-                    'label': 'Value One',
-                    'value': 'value1',
-                },
-                {
-                    'label': 'Value Two',
-                    'value': 'value2',
-                },
-                {
-                    'label': 'Value Three',
-                    'value': 'value3',
-                }
-            ],
-            value='value1',
-            style = { 'margin': 'auto'}
-        )]),
-        html.Br(),
-
+        html.Div(
+            [
+                dbc.Button(
+                id='submit_button',
+                n_clicks=0,
+                children="Refresh Graph Aspect",
+                color='primary',
+                block=True
+                )
+            ]
+        ),
+        # html.Button(
+        #     'Refresh Graph Aspect',
+        #     id='submit_button',
+        #     n_clicks=0,
+        #     style = {
+        #         'color': 'skyblue',
+        #         'text-align': 'center',
+        #     }
+        # )
     ]
 )
 
