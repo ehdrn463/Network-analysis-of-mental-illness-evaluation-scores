@@ -247,7 +247,7 @@ def generate_network_graph(target_df = raw_df, specific_attr=None):
 
 
 # 중심성 계산 함수
-def network_to_centrality(input_graph=basic_graph, normalized=False):
+def network_to_centrality(input_graph=basic_graph, normalized=True):
     '''
     input_graph(networkx graph object) -> centrality plot
     '''
@@ -294,7 +294,7 @@ def network_to_centrality(input_graph=basic_graph, normalized=False):
         weighted_sum = sum(weight_cent.values())
         norm_weight_cent = {k:v/weighted_sum for k, v in weight_cent.items()}
         fig.add_trace(go.Scatter(x=list(norm_weight_cent.values()), y= list(norm_weight_cent.keys()), mode="lines+markers", name="norm weighted degree", marker_color="#00CC96"))
-        weighted_cent_fig = go.Figure(data=[go.Scatter(x=list(norm_weight_cent.values()), y=list(norm_weight_cent.keys(), mode="lines+markers", name="norm weighted closeness", marker_color="#00CC96"))])
+        weighted_cent_fig = go.Figure(data=[go.Scatter(x=list(norm_weight_cent.values()), y=list(norm_weight_cent.keys()), mode="lines+markers", name="norm weighted closeness", marker_color="#00CC96")])
     else:
         fig.add_trace(go.Scatter(x=list(weight_cent.values()), y= list(weight_cent.keys()), mode="lines+markers", name="weighted degree", marker_color="#00CC96"))     
         weighted_cent_fig = go.Figure(data=[go.Scatter(x=list(weight_cent.values()), y=list(weight_cent.keys()), mode="lines+markers", name="weighted closeness", marker_color="#00CC96")])

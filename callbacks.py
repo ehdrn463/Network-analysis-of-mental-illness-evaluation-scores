@@ -21,9 +21,11 @@ def update_graph(contents, filename, contents2, filename2, refresh_clicks):
         raise PreventUpdate
     if contents:
         df = mg.attr_to_ggm(contents, filename)
+        df = round(df, 2)
     elif contents2:
         # corr matrix는 바로 읽음 ( GGM 적용 X )
         df = mg.download_file(contents2, filename2)
+        df = round(df, 2)
         
     # source, target, weight matrix로 변환
     target_df = mg.corr_to_target(df)
