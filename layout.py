@@ -86,48 +86,8 @@ corr_file_uploads = html.Div([
 ])
 
 controls = dbc.FormGroup(
-    [                    
-        html.Div(
-            className="twelve columns",
-            children=[
-                dcc.Markdown(d("""
-                **Attribute to Search**.
-                """)),
-                dcc.Input(id="input_attr", 
-                          type="text"), #, placeholder="Attribute"
-                html.Div(id="output_attr")
-            ],
-            style={'textAlign': 'center'}
-        )
-        ,
-        html.Br(),
-        # html.P('gamma', style = {
-        #     'textAlign': 'center'
-        # }),
+    [    
         dcc.Markdown(d("""
-        **EBIC: gamma**
-        """), style={'text-align': 'center'}),
-        dcc.Dropdown(
-            id='dropdown-gamma',
-            options = [ 
-                {
-                    'label': '0.01',
-                    'value': 0.01
-                }, 
-                {
-                    'label': '0.1',
-                    'value': 0.1,
-                }, 
-                {
-                    'label': '0.5',
-                    'value': 0.5
-                },
-            ],
-            value = [0.5],
-            multi = False,
-        ),
-        html.Br(),
-         dcc.Markdown(d("""
         **Network Analysis Style**
         """), style={'text-align': 'center'}),
         dcc.Dropdown(
@@ -156,12 +116,51 @@ controls = dbc.FormGroup(
             ],
             value = ['shell'],
             multi = False,
+        ),           
+        html.Br(),
+        # html.P('gamma', style = {
+        #     'textAlign': 'center'
+        # }),
+        dcc.Markdown(d("""
+        **EBIC: gamma**
+        """), style={'text-align': 'center'}),
+        dcc.Dropdown(
+            id='dropdown-gamma',
+            options = [ 
+                {
+                    'label': '0.01',
+                    'value': 0.01
+                }, 
+                {
+                    'label': '0.1',
+                    'value': 0.1,
+                }, 
+                {
+                    'label': '0.5',
+                    'value': 0.5
+                },
+            ],
+            value = [0.5],
+            multi = False,
+        ),
+        html.Br(),
+        html.Div(
+            className="twelve columns",
+            children=[
+                dcc.Markdown(d("""
+                **Attribute to Search**.
+                """)),
+                dcc.Input(id="input_attr", 
+                          type="text"), #, placeholder="Attribute"
+                html.Div(id="output_attr")
+            ],
+            style={'textAlign': 'center'}
         ),
         html.Br(),
         html.Div(
             [
                 dbc.Button(
-                id='submit_button',
+                id='refresh-button',
                 n_clicks=0,
                 children="Refresh Graph Aspect",
                 color='primary',
@@ -245,6 +244,17 @@ content_second_row = dbc.Row(
 )
 
 content_third_row = dbc.Row(
+    dbc.Col(
+        dcc.Graph(
+            figure=mg.make_heatmap(),
+            id = "heatmap_graph"
+        ),
+        md=12,
+    ),
+)
+
+
+content_fourth_row = dbc.Row(
     children = [
         mg.make_ggm_table()
     ],
@@ -263,6 +273,8 @@ content = html.Div(
         content_second_row,
         html.Hr(),
         content_third_row,
+        html.Hr(),
+        content_fourth_row
     ],
     style = CONTENT_STYLE
 )

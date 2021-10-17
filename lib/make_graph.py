@@ -17,14 +17,14 @@ from dash import dash_table
 # import dash_core_components as dcc
 from dash import dcc
 
-from colour import Color
+from colour import Color, color_scale
 from dash_extensions import Download
 from dash.exceptions import PreventUpdate
 from inverse_covariance import QuicGraphicalLassoEBIC
 
 # def initialize_graph():
 global raw, raw_df
-raw = round(pd.read_csv(r'/Users/gimdong-gu/Desktop/mind_detector_v3/Network-analysis-of-mental-illness-evaluation-scores/data/psp_swn_weight_ggg_v2.csv', index_col=0), 3)
+raw = round(pd.read_csv(r'/Users/gimdong-gu/Desktop/mind_detector_v3/Network-analysis-of-mental-illness-evaluation-scores/data/psp_swn_weight_ggg_v2.csv', index_col=0), 2)
 raw_v2 = raw.copy()
 raw_v2.insert(0, 'Attr', raw.columns, allow_duplicates=False)
 
@@ -50,6 +50,7 @@ def corr_to_target(df):
     pandas.dataframe(corr) -> weight
     '''
     # print('df', df.columns) 
+    df = round(df, 2)
     target_df = pd.DataFrame.from_dict(df)
     target_df = target_df.stack().reset_index()
     target_df.columns = ['source', 'target', 'weight']
@@ -64,6 +65,7 @@ def target_to_graph(target_df):
     '''
     df(weight_df) -> graph
     '''
+    target_df = round(target_df, 2)
     basic_graph = nx.from_pandas_edgelist(target_df, 'source', 'target', ['source', 'target', 'weight'], create_using=nx.Graph())
     return basic_graph
 
@@ -74,7 +76,7 @@ def generate_network_graph(target_df = raw_df, specific_attr=None):
     target_df(pandas dataframe) -> plotly.go
     '''
     # print(specific_attr)
-
+    target_df = round(target_df, 2)
     attrSet = set(list(target_df.columns))
     
     # networkx layout 배치를위한 중심점 정의
@@ -259,7 +261,6 @@ def network_to_centrality(input_graph=basic_graph, normalized=False):
     '''
     degree_cent = nx.degree_centrality(input_graph)
     degree_cent = dict(sorted(degree_cent.items(), key=lambda item:item[1]))
-    print(degree_cent)
     fig.add_trace(go.Scatter(x=list(degree_cent.values()), y= list(degree_cent.keys()), mode="lines+markers", name="degree", marker_color="#19D3F3"))
     
     degree_cent_fig = go.Figure(data=[go.Scatter(x=list(degree_cent.values()), y=list(degree_cent.keys()), mode="lines+markers", name="degree", marker_color="#19D3F3")])
@@ -355,7 +356,7 @@ def network_to_centrality(input_graph=basic_graph, normalized=False):
         fig.add_trace(go.Scatter(x=list(between_cent.values()), y= list(between_cent.keys()), mode="lines+markers", name="between"))              
     except:
         print("pagerank centrality 오류")
-    print(degree_cent_fig)
+    
     return fig, degree_cent_fig, weighted_cent_fig, closeness_cent_fig, between_cent_fig
     
 
@@ -554,3 +555,44 @@ def make_ggm_table(ggm_matrix=raw_v2):
 
         ],
     ))
+
+
+
+def make_heatmap(ggm_matrix = raw_v2):
+    ggm_matrix = round(ggm_matrix, 2)
+    
+    if 'Attr' in ggm_matrix.columns:
+        ggm_matrix.drop(['Attr'], axis=1, inplace=True)
+
+    fig = go.Figure(data=go.Heatmap(
+        x = list(ggm_matrix.columns),
+        y = list(ggm_matrix.columns),
+        z = ggm_matrix,
+        zmin= -1,
+        zmax= 1,
+        colorbar = dict(
+            title = "GGM",
+            titleside = "top",
+        ),
+        colorscale = "RdBu"
+            # [
+            #     [0.0, "rgb(165,0,38)"],
+            #     [0.1111111111111111, "rgb(215,48,39)"],
+            #     [0.2222222222222222, "rgb(244,109,67)"],
+            #     [0.3333333333333333, "rgb(253,174,97)"],
+            #     [0.4444444444444444, "rgb(254,224,144)"],
+            #     [0.5555555555555556, "rgb(224,243,248)"],
+            #     [0.6666666666666666, "rgb(171,217,233)"],
+            #     [0.7777777777777778, "rgb(116,173,209)"],
+            #     [0.8888888888888888, "rgb(69,117,180)"],
+            #     [1.0, "rgb(49,54,149)"]
+            # ]
+    ))
+
+    fig.update_layout(
+        title = "Heatmap of Correlation",
+        height = 700,
+        # xaxis_nticks = 36
+    )
+
+    return fig
