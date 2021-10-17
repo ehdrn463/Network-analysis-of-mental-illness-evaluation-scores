@@ -5,7 +5,9 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objs as go
 
-
+import matplotlib
+import seaborn as sns
+import colorsys
 import math
 import io
 import base64
@@ -141,12 +143,29 @@ def generate_network_graph(target_df = raw_df, specific_attr=None):
 
     traceRecode = []  # contains edge_trace, node_trace, middle_node_trace
     ############################################################################################################################################################
-    pos_colors = list(Color('DarkBlue').range_to(Color('SkyBlue'), 3))
-    pos_colors = ['rgb'+str(x.rgb) for x in pos_colors]
+    # pos_colors = list(Color('DarkBlue').range_to(Color('SkyBlue'), 3))
+    # pos_colors = ['rgb'+str(x.rgb) for x in pos_colors]
 
-    neg_colors = list(Color('OrangeRed').range_to(Color('DarkRed'), 3))
-    neg_colors = ['rgb'+str(x.rgb) for x in neg_colors]
+    # neg_colors = list(Color('OrangeRed').range_to(Color('DarkRed'), 3))
+    # neg_colors = ['rgb'+str(x.rgb) for x in neg_colors]
     # colors = ['rgb' + str(x.rgb) for x in colors]
+
+
+    # color = matplotlib.colors.ColorConverter.to_rgb("navy")
+    # rgbs = [scale_lightness(color, scale) for scale in [0, .5, 1, 1.5, 2]]
+
+    def scale_lightness(rgb, scale_l):
+        # convert rgb to hls
+        h, l, s = colorsys.rgb_to_hls(*rgb)
+        # manipulate h, l, s values and return as rgb
+        return colorsys.hls_to_rgb(h, min(1, l * scale_l), s = s)
+
+    pos_color = matplotlib.colors.ColorConverter.to_rgb("teal")
+    pos_rgbs = ['rgb'+str(scale_lightness(pos_color, scale * 10)) for scale in np.arange(0.15, 0.1, -0.005)]
+
+    neg_color = matplotlib.colors.ColorConverter.to_rgb("darkred")
+    neg_rgbs = ['rgb'+str(scale_lightness(neg_color, scale * 10)) for scale in np.arange(0.15, 0.1, -0.005)]
+
 
     index = 0
     for edge in G.edges:
@@ -155,25 +174,11 @@ def generate_network_graph(target_df = raw_df, specific_attr=None):
         x1, y1 = G.nodes[edge[1]]['pos']
         weight = G.edges[edge]['weight']
 
-        if weight > 0:
-            if weight < 0.3:
-                selected_color = pos_colors[2]
-            elif 0.3 <= weight < 0.6:
-                selected_color = pos_colors[1]
-            else:
-                selected_color = pos_colors[0]
-        else:
-            if weight <= -0.6:
-                selected_color = neg_colors[2]
-            elif -0.6 < weight <= 0.3:
-                selected_color = neg_colors[1]
-            else:
-                selected_color = neg_colors[0]
-
         trace = go.Scatter(x=tuple([x0, x1, None]), y=tuple([y0, y1, None]),
                            mode='lines',
                            line={'width': abs(weight)*25},
-                           marker=dict(color=selected_color),
+                        #    marker = dict(color= 'teal' if weight >0 else 'darkred'),
+                           marker=dict(color= pos_rgbs[int(round(weight*10, 0))] if weight > 0 else neg_rgbs[int(round((-weight)*10, 0))]),
                            line_shape='spline',
                            opacity=1)
 
@@ -253,7 +258,7 @@ def network_to_centrality(input_graph=basic_graph, normalized=False):
             "text": "The Result of Node Centrality Analysis",
             "xanchor" : "left",
             "yanchor": "top",
-            'x': 0.55,
+            'x': 0.3,
         },
         autosize=True,
         height=600
