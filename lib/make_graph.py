@@ -11,6 +11,7 @@ import io
 import base64
 
 
+from community import community_louvain
 
 from dash import html
 from dash import dash_table
@@ -180,8 +181,11 @@ def generate_network_graph(target_df = raw_df, specific_attr=None):
         index = index + 1
 
     ###############################################################################################################################################################
+    # node_color_list = ["DEA5A4", "D3AFD5", "C9DECF", "C3E2DF", "B2DBBA", "F7B4BE", "F9DD7C"]
+    node_color_list = ['rgb(222,165,164)', 'rgb(201,222,207)','rgb(249,221,124)', 'rgb(211,175,213)', 'rgb(195,226,223)', 'rgb(178,219,186)','rgb(247,180,190)']
+    partition = community_louvain.best_partition(G)
     node_trace = go.Scatter(x=[], y=[], hovertext=[], text=[], mode='markers+text', textposition="bottom center",
-                            hoverinfo="text", marker={'size': 25, 'color': 'LightGreen'})
+                            hoverinfo="text", marker={'size': 25, 'color': []})
 
     index = 0
     for node in G.nodes():
@@ -194,8 +198,10 @@ def generate_network_graph(target_df = raw_df, specific_attr=None):
         node_trace['x'] += tuple([x])
         node_trace['y'] += tuple([y])
         node_trace['text'] += tuple([node])
-
+        node_trace['marker']['color'] += tuple([node_color_list[partition[node]]])
+        
         index = index + 1
+    
     traceRecode.append(node_trace)       
 
 
