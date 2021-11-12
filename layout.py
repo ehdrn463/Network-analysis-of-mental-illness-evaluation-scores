@@ -94,7 +94,7 @@ controls = dbc.FormGroup(
             id='dropdown-graph',
             options = [ 
                 {
-                    'label': 'spring',
+                    'label': 'spring (default)',
                     'value': 'spring',
                 }, 
                 {
@@ -102,19 +102,23 @@ controls = dbc.FormGroup(
                     'value': 'kamada_kawai',
                 }, 
                 {
-                    'label': 'shell',
-                    'value': 'shell',
-                },
-                {
                     'label': 'spectral',
                     'value': 'spectral',
                 }, 
                 {
-                    'label': 'fruchterman',
-                    'value': 'fruchterman',
+                    'label': 'spiral',
+                    'value': 'spiral',
                 },
+                {
+                    'label': 'circular',
+                    'value': 'circular',
+                },
+                {
+                    'label': 'shell',
+                    'value': 'shell'
+                }
             ],
-            value = ['shell'],
+            value = 'spring',
             multi = False,
         ),           
         html.Br(),
@@ -150,9 +154,9 @@ controls = dbc.FormGroup(
                 dcc.Markdown(d("""
                 **Attribute to Search**.
                 """)),
-                dcc.Input(id="input_attr", 
+                dcc.Input(id="search-node", 
                           type="text"), #, placeholder="Attribute"
-                html.Div(id="output_attr")
+                html.Button('Search', id="search-btn")
             ],
             style={'textAlign': 'center'}
         ),

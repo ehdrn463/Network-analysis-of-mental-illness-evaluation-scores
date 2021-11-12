@@ -1,3 +1,4 @@
+from networkx.generators.random_graphs import powerlaw_cluster_graph
 import pandas as pd
 import networkx as nx
 import numpy as np
@@ -74,7 +75,7 @@ def target_to_graph(target_df):
 
 
 # 네트워크 분석 함수 만들기
-def generate_network_graph(target_df = raw_df, specific_attr=None):
+def generate_network_graph(target_df = raw_df, layout="spring", specific_attr=None):
     '''
     target_df(pandas dataframe) -> plotly.go
     '''
@@ -102,14 +103,40 @@ def generate_network_graph(target_df = raw_df, specific_attr=None):
 
 
     G = nx.from_pandas_edgelist(target_df, 'source', 'target', ['source', 'target', 'weight'], create_using=nx.Graph())
- 
+    
+    # if len(shell2) > 1:
+    #     pos = nx.drawing.layout.spring_layout(G)
+    #     print("spring")
+    # else:
+    #     pos = nx.drawing.layout.shell_layout(G, shells)
+    #     print("shell")
 
-    if len(shell2) > 1:
+    # if len(shell2) > 1:
+    #     if layout == "spring": 
+    #         pos = nx.drawing.layout.spring_layout(G)
+    #     elif layout == "kamda_kawai":
+    #         pos = nx.drawing.layout.kamada_kawai_layout(G)
+    #     elif layout == "spectral":
+    #         pos = nx.drawing.layout.spectral_layout(G)
+    #     elif layout == "spiral":
+    #         pos = nx.drawing.layout.spiral_layout(G)
+    # else:
+    #     pos = nx.drawing.layout.shell_layout(G, shells)
+
+    if layout == "spring": 
         pos = nx.drawing.layout.spring_layout(G)
-        print("spring")
+    elif layout == "kamda_kawai":
+        pos = nx.drawing.layout.kamada_kawai_layout(G)
+    elif layout == "spectral":
+        pos = nx.drawing.layout.spectral_layout(G)
+    elif layout == "spiral":
+        pos = nx.drawing.layout.spiral_layout(G)
+    elif layout == "shell":
+        pos = nx.drawing.layout.shell_layout(G)
+    elif layout == "circular":
+        pos = nx.drawing.layout.circular_layout(G)
     else:
-        pos = nx.drawing.layout.shell_layout(G, shells)
-        print("shell")
+        pos = nx.drawing.layout.spring_layout(G)
 
     for node in G.nodes:
         G.nodes[node]['pos'] = list(pos[node])
@@ -471,7 +498,7 @@ def compute_Best_Alpha(X, gamma = 0.1):
         
         # lambda 100개에 대해 EBIC 값 계산
         EBIC = compute_EBIC(model, n, p, tr, gamma)
-        print("EBIC : "+str(EBIC)+" alpha : "+str(alpha))
+        # print("EBIC : "+str(EBIC)+" alpha : "+str(alpha))
         EBICs[i]=EBIC
     
     # EBICs 중 EBIC 값이 가장 작은 lambda 선택해서 best_alpha로 설정 

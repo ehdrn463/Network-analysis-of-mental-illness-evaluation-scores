@@ -11,27 +11,27 @@ from dash_extensions.snippets import send_bytes
 
 @app.callback(
     [Output('network_graph', 'figure'), Output('centrality_graph', 'figure'), Output('centrality_degree_graph', 'figure'), Output('centrality_weighted_degree_graph', 'figure'), Output('centrality_closeness_graph', 'figure'), Output('centrality_between_graph', 'figure'), Output('heatmap_graph', "figure"), Output('ggm_table', 'children')],
-    [Input('upload-file', 'contents'), Input('upload-file', 'filename'), Input('upload-corr-file', 'contents'), Input('upload-corr-file', 'filename'), Input('refresh-button', 'n_clicks')]
+    [Input('upload-file', 'contents'), Input('upload-file', 'filename'), Input('upload-corr-file', 'contents'), Input('upload-corr-file', 'filename'), Input('refresh-button', 'n_clicks'), Input('dropdown-graph', 'value'), Input('search-btn', 'n_clicks')],
+    State('search-node','value')
 )
-def update_graph(contents, filename, contents2, filename2, refresh_clicks):
-    print(filename, filename2, refresh_clicks)
+def update_graph(contents, filename, contents2, filename2, refresh_clicks, layout, search_clicks, search_node):
+    print(filename, filename2, refresh_clicks, layout)
     # attr에 ggm을 적용해줌.    
     if (not contents) and (not contents2):
-        print('stop')
-        raise PreventUpdate
+        df = pd.read_csv(r'/Users/gimdong-gu/Desktop/mind_detector_v3/Network-analysis-of-mental-illness-evaluation-scores/data/psp_swn_weight_ggg_v2.csv', index_col=0)
+        # print('stop')
+        # raise PreventUpdate
     if contents:
         df = mg.attr_to_ggm(contents, filename)
-        df = round(df, 2)
     elif contents2:
         # corr matrix는 바로 읽음 ( GGM 적용 X )
         df = mg.download_file(contents2, filename2)
-        df = round(df, 2)
-        
+    df = round(df, 2)    
     # source, target, weight matrix로 변환
     target_df = mg.corr_to_target(df)
 
     # network analaysis 진행
-    network_graph_fig = mg.generate_network_graph(target_df)
+    network_graph_fig = mg.generate_network_graph(target_df, layout, search_node)
 
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]   
 
@@ -42,10 +42,64 @@ def update_graph(contents, filename, contents2, filename2, refresh_clicks):
     centrality_graph_fig = mg.network_to_centrality(input_graph)
     
     if 'refresh-button.n_clicks' == changed_id:
-        print(changed_id)
         return network_graph_fig, centrality_graph_fig[0], centrality_graph_fig[1], centrality_graph_fig[2], centrality_graph_fig[3], centrality_graph_fig[4], mg.make_heatmap(df), mg.make_ggm_table(df)
 
     return network_graph_fig, centrality_graph_fig[0], centrality_graph_fig[1], centrality_graph_fig[2], centrality_graph_fig[3], centrality_graph_fig[4], mg.make_heatmap(df), mg.make_ggm_table(df)
+
+@app.callback(
+    Output("corr-matrix-download", "data"),
+    [Input("corr-matrix-save-button", "n_clicks"), Input("xlsx-corr-matrix-save-button", "n_clicks")],
+    State("corr-table", "data")
+)
+def download_corr_matrix_as_csv(csv_clicks, xlsx_clicks, corr_table_data):
+    df = pd.DataFrame.from_dict(corr_table_data)
+
+    if (not csv_clicks) and (not xlsx_clicks):
+        raise PreventUpdate
+    download_buffer = io.StringIO()
+    temp_columns = ['Attr']
+    for col in df.columns:
+        if col != 'Attr':
+            temp_columns.append(col)
+
+    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+    # change_xlsx = [p['xlsx-corr-matrix-save-button'] for p in dash.callback_context.triggered][0]
+
+    # print(change_xlsx)
+    if 'corr-matrix-save-button.n_clicks' == changed_id:
+        df.to_csv(download_buffer, index=False, columns = temp_columns)
+        download_buffer.seek(0)
+        return dict(content=download_buffer.getvalue(), filename="corr_matrix.csv")
+    elif 'xlsx-corr-matrix-save-button.n_clicks' == changed_id:
+        return dcc.send_data_frame(df.to_excel, filename="corr_matrix.xlsx", index= False)
+
+
+@app.callback(
+    Output("corr-matrix-download", "data"),
+    [Input("corr-matrix-save-button", "n_clicks"), Input("xlsx-corr-matrix-save-button", "n_clicks")],
+    State("corr-table", "data")
+)
+def download_corr_matrix_as_csv(csv_clicks, xlsx_clicks, corr_table_data):
+    df = pd.DataFrame.from_dict(corr_table_data)
+
+    if (not csv_clicks) and (not xlsx_clicks):
+        raise PreventUpdate
+    download_buffer = io.StringIO()
+    temp_columns = ['Attr']
+    for col in df.columns:
+        if col != 'Attr':
+            temp_columns.append(col)
+
+    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+    # change_xlsx = [p['xlsx-corr-matrix-save-button'] for p in dash.callback_context.triggered][0]
+
+    # print(change_xlsx)
+    if 'corr-matrix-save-button.n_clicks' == changed_id:
+        df.to_csv(download_buffer, index=False, columns = temp_columns)
+        download_buffer.seek(0)
+        return dict(content=download_buffer.getvalue(), filename="corr_matrix.csv")
+    elif 'xlsx-corr-matrix-save-button.n_clicks' == changed_id:
+        return dcc.send_data_frame(df.to_excel, filename="corr_matrix.xlsx", index= False)
 
 
 
@@ -80,32 +134,6 @@ def update_graph(contents, filename, contents2, filename2, refresh_clicks):
 
 
 
-@app.callback(
-    Output("corr-matrix-download", "data"),
-    [Input("corr-matrix-save-button", "n_clicks"), Input("xlsx-corr-matrix-save-button", "n_clicks")],
-    State("corr-table", "data")
-)
-def download_corr_matrix_as_csv(csv_clicks, xlsx_clicks, corr_table_data):
-    df = pd.DataFrame.from_dict(corr_table_data)
-
-    if (not csv_clicks) and (not xlsx_clicks):
-        raise PreventUpdate
-    download_buffer = io.StringIO()
-    temp_columns = ['Attr']
-    for col in df.columns:
-        if col != 'Attr':
-            temp_columns.append(col)
-
-    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-    # change_xlsx = [p['xlsx-corr-matrix-save-button'] for p in dash.callback_context.triggered][0]
-
-    # print(change_xlsx)
-    if 'corr-matrix-save-button.n_clicks' == changed_id:
-        df.to_csv(download_buffer, index=False, columns = temp_columns)
-        download_buffer.seek(0)
-        return dict(content=download_buffer.getvalue(), filename="corr_matrix.csv")
-    elif 'xlsx-corr-matrix-save-button.n_clicks' == changed_id:
-        return dcc.send_data_frame(df.to_excel, filename="corr_matrix.xlsx", index= False)
 
 
     # @app.callback(
