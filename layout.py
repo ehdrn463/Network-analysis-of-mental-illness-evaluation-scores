@@ -136,7 +136,7 @@ controls = dbc.FormGroup(
                     'value': 0.01
                 }, 
                 {
-                    'label': '0.1',
+                    'label': '0.1 (Default)',
                     'value': 0.1,
                 }, 
                 {
@@ -144,7 +144,7 @@ controls = dbc.FormGroup(
                     'value': 0.5
                 },
             ],
-            value = [0.5],
+            value = 0.1,
             multi = False,
         ),
         html.Br(),

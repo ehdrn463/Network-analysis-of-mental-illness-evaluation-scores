@@ -11,18 +11,19 @@ from dash_extensions.snippets import send_bytes
 
 @app.callback(
     [Output('network_graph', 'figure'), Output('centrality_graph', 'figure'), Output('centrality_degree_graph', 'figure'), Output('centrality_weighted_degree_graph', 'figure'), Output('centrality_closeness_graph', 'figure'), Output('centrality_between_graph', 'figure'), Output('heatmap_graph', "figure"), Output('ggm_table', 'children')],
-    [Input('upload-file', 'contents'), Input('upload-file', 'filename'), Input('upload-corr-file', 'contents'), Input('upload-corr-file', 'filename'), Input('refresh-button', 'n_clicks'), Input('dropdown-graph', 'value'), Input('search-btn', 'n_clicks')],
-    State('search-node','value')
+    [Input('upload-file', 'contents'), Input('upload-file', 'filename'), Input('upload-corr-file', 'contents'), Input('upload-corr-file', 'filename'), Input('refresh-button', 'n_clicks'), Input('dropdown-graph', 'value'), Input('search-btn', 'n_clicks'), Input('dropdown-gamma','value')],
+    [State('dropdown-gamma','value'), State('search-node','value')]
 )
-def update_graph(contents, filename, contents2, filename2, refresh_clicks, layout, search_clicks, search_node):
-    print(filename, filename2, refresh_clicks, layout)
+def update_graph(contents, filename, contents2, filename2, refresh_clicks, layout, search_clicks, gamma_input, gamma, search_node):
+    print(gamma)
     # attr에 ggm을 적용해줌.    
     if (not contents) and (not contents2):
         df = pd.read_csv(r'/Users/gimdong-gu/Desktop/mind_detector_v3/Network-analysis-of-mental-illness-evaluation-scores/data/psp_swn_weight_ggg_v2.csv', index_col=0)
         # print('stop')
         # raise PreventUpdate
     if contents:
-        df = mg.attr_to_ggm(contents, filename)
+        print('gamma: ', gamma)
+        df = mg.attr_to_ggm(contents, filename, gamma=gamma)
     elif contents2:
         # corr matrix는 바로 읽음 ( GGM 적용 X )
         df = mg.download_file(contents2, filename2)
@@ -44,7 +45,7 @@ def update_graph(contents, filename, contents2, filename2, refresh_clicks, layou
     search_node = None
     if 'refresh-button.n_clicks' == changed_id:
         return network_graph_fig, centrality_graph_fig[0], centrality_graph_fig[1], centrality_graph_fig[2], centrality_graph_fig[3], centrality_graph_fig[4], mg.make_heatmap(df), mg.make_ggm_table(df)
-
+    print(gamma)
     return network_graph_fig, centrality_graph_fig[0], centrality_graph_fig[1], centrality_graph_fig[2], centrality_graph_fig[3], centrality_graph_fig[4], mg.make_heatmap(df), mg.make_ggm_table(df)
 
 

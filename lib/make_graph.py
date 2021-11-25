@@ -139,9 +139,9 @@ def generate_network_graph(target_df = raw_df, layout="spring", specific_attr=No
         else:
             pos = nx.drawing.layout.spring_layout(G)
 
-    print(G.nodes)
+    # print(G.nodes)
     for node in G.nodes:
-        print(node)
+        # print(node)
         G.nodes[node]['pos'] = list(pos[node])
 
     # shell2: specific_attr을 제외한 요소를 위한 리스트
@@ -525,7 +525,7 @@ def cov2cor( cov ):
 ####################################################
 
 # attribute matrix를 GGM matrix로 만들어주는 함수
-def attr_to_ggm(contents, filename):
+def attr_to_ggm(contents, filename, gamma):
     content_type, content_string = contents.split(",")
     decoded = base64.b64decode(content_string)
 
@@ -550,17 +550,21 @@ def attr_to_ggm(contents, filename):
     # print(columnName)
     # best_alpha 계산
     # gamma 값 0.1로 설정해두었으나 변경 가능합니다.
-    best_alpha = compute_Best_Alpha(df) 
+
+    best_alpha = compute_Best_Alpha(df, gamma) 
     print('best_alpha: ', best_alpha)
     # best_alpha 이용해서 QuicGraphicalLasso 계산, model 구축
     estimator = QuicGraphicalLassoEBIC(lam=best_alpha, auto_scale = False, 
                                        verbose=1, tol = 1e-04,
-                                       init_method='spearman', path=100, gamma=0.1, 
+                                    #    gamma=0.1,
+                                       init_method='spearman', path=100, gamma=gamma, 
                                        max_iter=10000, method='quic').fit(df.values)
 
     # model.precision_ -> corr 변환 후 상삼각행렬 도출
     df = pd.DataFrame(np.triu(-cov2cor(estimator.precision_),1))
     result = df.copy()
+
+
 
     df.columns = columnName
     df.index = columnName
