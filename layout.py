@@ -113,10 +113,10 @@ controls = dbc.FormGroup(
                     'label': 'circular',
                     'value': 'circular',
                 },
-                {
-                    'label': 'shell',
-                    'value': 'shell'
-                }
+                # {
+                #     'label': 'shell',
+                #     'value': 'shell'
+                # }
             ],
             value = 'spring',
             multi = False,
@@ -156,7 +156,8 @@ controls = dbc.FormGroup(
                 """)),
                 dcc.Input(id="search-node", 
                           type="text"), #, placeholder="Attribute"
-                html.Button('Search', id="search-btn")
+                html.Button('Search', id="search-btn"),
+                html.Button('Reset', id="reset-btn")
             ],
             style={'textAlign': 'center'}
         ),

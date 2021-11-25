@@ -81,7 +81,7 @@ def generate_network_graph(target_df = raw_df, layout="spring", specific_attr=No
     '''
     # print(specific_attr)
     target_df = round(target_df, 2)
-    attrSet = set(list(target_df.columns))
+    attrSet = set(list(target_df['source']))
     
     # networkx layout 배치를위한 중심점 정의
     shells = []
@@ -89,7 +89,8 @@ def generate_network_graph(target_df = raw_df, layout="spring", specific_attr=No
     shell1 = [] #specific_attr을 위한 리스트
 
     #specific_attr 있으면 추가
-    shell1.append(specific_attr)
+    if specific_attr != None:
+        shell1.append(specific_attr)
     shells.append(shell1)
 
 
@@ -122,34 +123,38 @@ def generate_network_graph(target_df = raw_df, layout="spring", specific_attr=No
     #         pos = nx.drawing.layout.spiral_layout(G)
     # else:
     #     pos = nx.drawing.layout.shell_layout(G, shells)
-
-    if layout == "spring": 
-        pos = nx.drawing.layout.spring_layout(G)
-    elif layout == "kamda_kawai":
-        pos = nx.drawing.layout.kamada_kawai_layout(G)
-    elif layout == "spectral":
-        pos = nx.drawing.layout.spectral_layout(G)
-    elif layout == "spiral":
-        pos = nx.drawing.layout.spiral_layout(G)
-    elif layout == "shell":
-        pos = nx.drawing.layout.shell_layout(G)
-    elif layout == "circular":
-        pos = nx.drawing.layout.circular_layout(G)
+    if specific_attr != None:
+        pos = nx.drawing.layout.shell_layout(G, shells)
     else:
-        pos = nx.drawing.layout.spring_layout(G)
+        if layout == "spring": 
+            pos = nx.drawing.layout.spring_layout(G)
+        elif layout == "kamda_kawai":
+            pos = nx.drawing.layout.kamada_kawai_layout(G)
+        elif layout == "spectral":
+            pos = nx.drawing.layout.spectral_layout(G)
+        elif layout == "spiral":
+            pos = nx.drawing.layout.spiral_layout(G)
+        elif layout == "circular":
+            pos = nx.drawing.layout.circular_layout(G)
+        else:
+            pos = nx.drawing.layout.spring_layout(G)
 
+    print(G.nodes)
     for node in G.nodes:
+        print(node)
         G.nodes[node]['pos'] = list(pos[node])
 
     # shell2: specific_attr을 제외한 요소를 위한 리스트
     if len(shell2) == 0:
         traceRecode = [] # contains edge_trace, node_trace, middle_node_trace
-        node_trace = go.Scatter(x=tuple([1]), y=tuple([1]), text=tuple([str(specific_attr)]), 
+        node_trace = go.Scatter(x=tuple([1]), y=tuple([1]), 
+                                text=tuple([str(specific_attr)]), 
                                 textposition="bottom center",
                                 mode= "markers+text",
                                 marker={'size': 25, 'color': 'LightSkyBlue'},
                                 opacity = 0)
         traceRecode.append(node_trace)
+
         node_trace1 = go.Scatter(x=tuple([1]), y=tuple([1]),
                                 mode='markers',
                                 marker={'size': 25, 'color': 'LightSkyBlue'},

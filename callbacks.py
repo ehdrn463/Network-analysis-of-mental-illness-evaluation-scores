@@ -41,10 +41,25 @@ def update_graph(contents, filename, contents2, filename2, refresh_clicks, layou
     # 중심성 계산
     centrality_graph_fig = mg.network_to_centrality(input_graph)
     
+    search_node = None
     if 'refresh-button.n_clicks' == changed_id:
         return network_graph_fig, centrality_graph_fig[0], centrality_graph_fig[1], centrality_graph_fig[2], centrality_graph_fig[3], centrality_graph_fig[4], mg.make_heatmap(df), mg.make_ggm_table(df)
 
     return network_graph_fig, centrality_graph_fig[0], centrality_graph_fig[1], centrality_graph_fig[2], centrality_graph_fig[3], centrality_graph_fig[4], mg.make_heatmap(df), mg.make_ggm_table(df)
+
+
+
+@app.callback(Output('search-node','value'),
+             [Input('reset-btn','n_clicks')])
+def update(reset):
+    return ;
+
+
+# @app.callback(Output('search-node','value'),
+#              [Input('dropdown-gamma','value')])
+# def update(reset):
+#     return ;
+
 
 @app.callback(
     Output("corr-matrix-download", "data"),
