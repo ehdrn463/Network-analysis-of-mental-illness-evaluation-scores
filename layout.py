@@ -213,12 +213,12 @@ content_first_row = dbc.Row([
 
 content_second_row = dbc.Row(
     [
-        dbc.Col(
-            dcc.Graph(id='centrality_graph',
-                     figure = mg.network_to_centrality()[0]), 
-                     md=12,
+        # dbc.Col(
+        #     dcc.Graph(id='centrality_graph',
+        #              figure = mg.network_to_centrality()[0]), 
+        #              md=12,
                      
-        ),
+        # ),
         dbc.Col(
             dcc.Graph(id='centrality_degree_graph',
                      figure = mg.network_to_centrality()[1]), 
