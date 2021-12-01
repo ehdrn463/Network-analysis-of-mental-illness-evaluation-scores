@@ -33,6 +33,7 @@ def update_graph(contents, filename, contents2, filename2, refresh_clicks, layou
     target_df = mg.corr_to_target(df)
 
     # network analaysis 진행
+    # print(layout, "searchnode: ", search_node)
     network_graph_fig = mg.generate_network_graph(target_df, layout, search_node)
 
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]   
@@ -43,7 +44,7 @@ def update_graph(contents, filename, contents2, filename2, refresh_clicks, layou
     # 중심성 계산
     centrality_graph_fig = mg.network_to_centrality(input_graph)
     
-    search_node = None
+    # search_node = None
     if 'refresh-button.n_clicks' == changed_id:
         # return network_graph_fig, centrality_graph_fig[0], centrality_graph_fig[1], centrality_graph_fig[2], centrality_graph_fig[3], centrality_graph_fig[4], mg.make_heatmap(df), mg.make_ggm_table(df)
         return network_graph_fig, centrality_graph_fig[1], centrality_graph_fig[2], centrality_graph_fig[3], centrality_graph_fig[4], mg.make_heatmap(df), mg.make_ggm_table(df)
@@ -99,6 +100,7 @@ def download_corr_matrix_as_csv(csv_clicks, xlsx_clicks, corr_table_data):
 )
 def download_corr_matrix_as_csv(csv_clicks, xlsx_clicks, corr_table_data):
     df = pd.DataFrame.from_dict(corr_table_data)
+    print('df: ', df.columns)
 
     if (not csv_clicks) and (not xlsx_clicks):
         raise PreventUpdate
@@ -113,6 +115,7 @@ def download_corr_matrix_as_csv(csv_clicks, xlsx_clicks, corr_table_data):
 
     # print(change_xlsx)
     if 'corr-matrix-save-button.n_clicks' == changed_id:
+        print(temp_columns)
         df.to_csv(download_buffer, index=False, columns = temp_columns)
         download_buffer.seek(0)
         return dict(content=download_buffer.getvalue(), filename="corr_matrix.csv")

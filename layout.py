@@ -273,12 +273,16 @@ content = html.Div(
     [
         html.H2('Network analysis of mental illness evaluation scores', style=TEXT_STYLE),
         html.Hr(),
+        html.H3('Gaussian Graphicl Model Network Analysis', style=TEXT_STYLE),
         content_first_row,
         html.Hr(),
+        html.H3('Centrality Analysis', style=TEXT_STYLE),
         content_second_row,
         html.Hr(),
+        html.H3('Heatmap of Correlation', style=TEXT_STYLE),
         content_third_row,
         html.Hr(),
+        html.H3('The Result of Gaussian Graphical Model Analaysis', style=TEXT_STYLE),
         content_fourth_row
     ],
     style = CONTENT_STYLE

@@ -26,6 +26,8 @@ from dash_extensions import Download
 from dash.exceptions import PreventUpdate
 from inverse_covariance import QuicGraphicalLassoEBIC
 
+
+
 # def initialize_graph():
 global raw, raw_df
 raw = round(pd.read_csv(r'/Users/gimdong-gu/Desktop/mind_detector_v3/Network-analysis-of-mental-illness-evaluation-scores/data/psp_swn_weight_ggg_v2.csv', index_col=0), 2)
@@ -79,7 +81,7 @@ def generate_network_graph(target_df = raw_df, layout="spring", specific_attr=No
     '''
     target_df(pandas dataframe) -> plotly.go
     '''
-    # print(specific_attr)
+    print("specific_attr: ", specific_attr)
     target_df = round(target_df, 2)
     attrSet = set(list(target_df['source']))
     
@@ -264,14 +266,16 @@ def generate_network_graph(target_df = raw_df, layout="spring", specific_attr=No
     #################################################################################################################################################################
     figure = {
         "data": traceRecode,
-        "layout": go.Layout(title='Gaussian Graphical Model Network Analysis', showlegend=False, hovermode='closest',
-                            margin={'b': 40, 'l': 40, 'r': 40, 't': 40},
-                            xaxis={'showgrid': False, 'zeroline': False, 'showticklabels': False},
-                            yaxis={'showgrid': False, 'zeroline': False, 'showticklabels': False},
-                            height=600,
-                            clickmode='event+select',
-
-                            )}
+        "layout": go.Layout
+            (
+                # title='Gaussian Graphical Model Network Analysis', showlegend=False, hovermode='closest',
+                margin={'b': 40, 'l': 40, 'r': 40, 't': 40},
+                xaxis={'showgrid': False, 'zeroline': False, 'showticklabels': False},
+                yaxis={'showgrid': False, 'zeroline': False, 'showticklabels': False},
+                height=600,
+                clickmode='event+select',
+            )
+        }
     # print(type(figure))
     # print("끝")
     return figure
@@ -286,12 +290,12 @@ def network_to_centrality(input_graph=basic_graph, normalized=True):
     fig = go.Figure()
 
     fig.update_layout(
-        title= {
-            "text": "The Result of Node Centrality Analysis",
-            "xanchor" : "left",
-            "yanchor": "top",
-            'x': 0.3,
-        },
+        # title= {
+        #     "text": "The Result of Node Centrality Analysis",
+        #     "xanchor" : "left",
+        #     "yanchor": "top",
+        #     'x': 0.3,
+        # },
         autosize=True,
         height=600
     )
@@ -562,6 +566,8 @@ def attr_to_ggm(contents, filename, gamma):
 
     # model.precision_ -> corr 변환 후 상삼각행렬 도출
     df = pd.DataFrame(np.triu(-cov2cor(estimator.precision_),1))
+    df_under = pd.DataFrame(np.tril(-cov2cor(estimator.precision_),-1))
+    df = df + df_under
     result = df.copy()
 
 
@@ -587,9 +593,9 @@ def make_ggm_table(ggm_matrix=raw_v2):
     return (html.Div(
         [
             dcc.Download(id="corr-matrix-download"),
-            html.Label("The Result of Gaussian Graphical Model Analaysis", style={'font-size': 20, 'font-weight': True}),
-            html.Button("Save Matrix as CSV", id="corr-matrix-save-button"),
-            html.Button("Save Matrix as XLSX", id="xlsx-corr-matrix-save-button"),
+            # html.Label("The Result of Gaussian Graphical Model Analaysis", style={'font-size': 30, 'font-weight': True}),
+            # html.Button("Save Matrix as CSV", id="corr-matrix-save-button"),
+            # html.Button("Save Matrix as XLSX", id="xlsx-corr-matrix-save-button"),
             dash_table.DataTable(
                 id = "corr-table",
                 columns=[{"name": str(i), "id": str(i)} for i in ggm_matrix.columns],
@@ -598,6 +604,7 @@ def make_ggm_table(ggm_matrix=raw_v2):
                     'whiteSpace': 'normal',
                     'height': 'auto',
                 },
+                export_format= "csv",
             ),
 
         ],
@@ -637,11 +644,12 @@ def make_heatmap(ggm_matrix = raw_v2):
     ))
 
     fig.update_layout(
-        title = {
-            "text": "Heatmap of Correlation",
-            "x": 0.52,
-        },
-        height = 700,
+        # title = {
+        #     "text": "Heatmap of Correlation",
+        #     "x": 0.52,
+        # },
+        # font-size = 30
+        height = 800,
         # xaxis_nticks = 36
     )
 
