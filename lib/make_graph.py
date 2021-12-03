@@ -32,7 +32,7 @@ from inverse_covariance import QuicGraphicalLassoEBIC
 global raw, raw_df
 raw = round(pd.read_csv(r'/Users/gimdong-gu/Desktop/mind_detector_v3/Network-analysis-of-mental-illness-evaluation-scores/data/psp_swn_weight_ggg_v2.csv', index_col=0), 2)
 raw_v2 = raw.copy()
-raw_v2.insert(0, 'Attr', raw.columns, allow_duplicates=False)
+# raw_v2.insert(0, 'Attr', raw.columns, allow_duplicates=False)
 
 
 # 정신질환 질문 속성
@@ -76,12 +76,12 @@ def target_to_graph(target_df):
     return basic_graph
 
 
-# 네트워크 분석 함수 만들기
+# 네트워크 분석 함수 만들기 - 커뮤니티 디텍션 분리
 def generate_network_graph(target_df = raw_df, layout="spring", specific_attr=None):
     '''
     target_df(pandas dataframe) -> plotly.go
     '''
-    print("specific_attr: ", specific_attr)
+    
     target_df = round(target_df, 2)
     attrSet = set(list(target_df['source']))
     
@@ -107,24 +107,7 @@ def generate_network_graph(target_df = raw_df, layout="spring", specific_attr=No
 
     G = nx.from_pandas_edgelist(target_df, 'source', 'target', ['source', 'target', 'weight'], create_using=nx.Graph())
     
-    # if len(shell2) > 1:
-    #     pos = nx.drawing.layout.spring_layout(G)
-    #     print("spring")
-    # else:
-    #     pos = nx.drawing.layout.shell_layout(G, shells)
-    #     print("shell")
 
-    # if len(shell2) > 1:
-    #     if layout == "spring": 
-    #         pos = nx.drawing.layout.spring_layout(G)
-    #     elif layout == "kamda_kawai":
-    #         pos = nx.drawing.layout.kamada_kawai_layout(G)
-    #     elif layout == "spectral":
-    #         pos = nx.drawing.layout.spectral_layout(G)
-    #     elif layout == "spiral":
-    #         pos = nx.drawing.layout.spiral_layout(G)
-    # else:
-    #     pos = nx.drawing.layout.shell_layout(G, shells)
     if specific_attr != None:
         pos = nx.drawing.layout.shell_layout(G, shells)
     else:
@@ -176,17 +159,6 @@ def generate_network_graph(target_df = raw_df, layout="spring", specific_attr=No
 
 
     traceRecode = []  # contains edge_trace, node_trace, middle_node_trace
-    ############################################################################################################################################################
-    # pos_colors = list(Color('DarkBlue').range_to(Color('SkyBlue'), 3))
-    # pos_colors = ['rgb'+str(x.rgb) for x in pos_colors]
-
-    # neg_colors = list(Color('OrangeRed').range_to(Color('DarkRed'), 3))
-    # neg_colors = ['rgb'+str(x.rgb) for x in neg_colors]
-    # colors = ['rgb' + str(x.rgb) for x in colors]
-
-
-    # color = matplotlib.colors.ColorConverter.to_rgb("navy")
-    # rgbs = [scale_lightness(color, scale) for scale in [0, .5, 1, 1.5, 2]]
 
     def scale_lightness(rgb, scale_l):
         # convert rgb to hls
@@ -219,10 +191,9 @@ def generate_network_graph(target_df = raw_df, layout="spring", specific_attr=No
         traceRecode.append(trace)
         index = index + 1
 
-    ###############################################################################################################################################################
-    # node_color_list = ["DEA5A4", "D3AFD5", "C9DECF", "C3E2DF", "B2DBBA", "F7B4BE", "F9DD7C"]
+    ############################################################################################################################################################
     node_color_list = ['rgb(222,165,164)', 'rgb(201,222,207)','rgb(249,221,124)', 'rgb(211,175,213)', 'rgb(195,226,223)', 'rgb(178,219,186)','rgb(247,180,190)']
-    partition = community_louvain.best_partition(G)
+    # partition = community_louvain.best_partition(G)
     node_trace = go.Scatter(x=[], y=[], hovertext=[], text=[], mode='markers+text', textposition="bottom center",
                             hoverinfo="text", marker={'size': 25, 'color': []})
 
@@ -237,7 +208,9 @@ def generate_network_graph(target_df = raw_df, layout="spring", specific_attr=No
         node_trace['x'] += tuple([x])
         node_trace['y'] += tuple([y])
         node_trace['text'] += tuple([node])
-        node_trace['marker']['color'] += tuple([node_color_list[partition[node]]])
+        node_trace['marker']['color'] += tuple([node_color_list[2]])
+        # node_trace['marker']['color'] += tuple([node_color_list[partition[node]]])
+
         
         index = index + 1
     
@@ -268,7 +241,7 @@ def generate_network_graph(target_df = raw_df, layout="spring", specific_attr=No
         "data": traceRecode,
         "layout": go.Layout
             (
-                # title='Gaussian Graphical Model Network Analysis', showlegend=False, hovermode='closest',
+                title='Gaussian Graphical Model Network Analysis', showlegend=False, hovermode='closest',
                 margin={'b': 40, 'l': 40, 'r': 40, 't': 40},
                 xaxis={'showgrid': False, 'zeroline': False, 'showticklabels': False},
                 yaxis={'showgrid': False, 'zeroline': False, 'showticklabels': False},
@@ -280,6 +253,182 @@ def generate_network_graph(target_df = raw_df, layout="spring", specific_attr=No
     # print("끝")
     return figure
 
+
+def applied_community_detection(target_df = raw_df, layout="spring", specific_attr=None, gamma=1.0):
+# 네트워크 분석 함수 만들기 - 커뮤니티 디텍션 분리
+    '''
+    target_df(pandas dataframe) -> plotly.go
+    '''
+    
+    target_df = round(target_df, 2)
+    attrSet = set(list(target_df['source']))
+    
+    # networkx layout 배치를위한 중심점 정의
+    shells = []
+
+    shell1 = [] #specific_attr을 위한 리스트
+
+    #specific_attr 있으면 추가
+    if specific_attr != None:
+        shell1.append(specific_attr)
+    shells.append(shell1)
+
+
+    shell2 = [] #specific_attr을 제외한 요소를 위한 리스트
+
+    # specific_attr와 다른 요소 추가
+    for elem in attrSet:
+        if elem != specific_attr:
+            shell2.append(elem)
+    shells.append(shell2)
+
+
+    G = nx.from_pandas_edgelist(target_df, 'source', 'target', ['source', 'target', 'weight'], create_using=nx.Graph())
+    
+
+    if specific_attr != None:
+        pos = nx.drawing.layout.shell_layout(G, shells)
+    else:
+        if layout == "spring": 
+            pos = nx.drawing.layout.spring_layout(G)
+        elif layout == "kamda_kawai":
+            pos = nx.drawing.layout.kamada_kawai_layout(G)
+        elif layout == "spectral":
+            pos = nx.drawing.layout.spectral_layout(G)
+        elif layout == "spiral":
+            pos = nx.drawing.layout.spiral_layout(G)
+        elif layout == "circular":
+            pos = nx.drawing.layout.circular_layout(G)
+        else:
+            pos = nx.drawing.layout.spring_layout(G)
+
+    # print(G.nodes)
+    for node in G.nodes:
+        # print(node)
+        G.nodes[node]['pos'] = list(pos[node])
+
+    # shell2: specific_attr을 제외한 요소를 위한 리스트
+    if len(shell2) == 0:
+        traceRecode = [] # contains edge_trace, node_trace, middle_node_trace
+        node_trace = go.Scatter(x=tuple([1]), y=tuple([1]), 
+                                text=tuple([str(specific_attr)]), 
+                                textposition="bottom center",
+                                mode= "markers+text",
+                                marker={'size': 25, 'color': 'LightSkyBlue'},
+                                opacity = 0)
+        traceRecode.append(node_trace)
+
+        node_trace1 = go.Scatter(x=tuple([1]), y=tuple([1]),
+                                mode='markers',
+                                marker={'size': 25, 'color': 'LightSkyBlue'},
+                                opacity=0)
+        traceRecode.append(node_trace1)
+
+        figure = {
+            "data": traceRecode,
+            "layout": go.Layout(title='Network Analaysis Applied Search', showlegend=False,
+                                margin={'b': 40, 'l': 40, 'r': 40, 't': 40},
+                                xaxis={'showgrid': False, 'zeroline': False, 'showticklabels': False},
+                                yaxis={'showgrid': False, 'zeroline': False, 'showticklabels': False},
+                                height=600
+                                )}
+        return figure
+        
+
+
+    traceRecode = []  # contains edge_trace, node_trace, middle_node_trace
+
+    def scale_lightness(rgb, scale_l):
+        # convert rgb to hls
+        h, l, s = colorsys.rgb_to_hls(*rgb)
+        # manipulate h, l, s values and return as rgb
+        return colorsys.hls_to_rgb(h, min(1, l * scale_l), s = s)
+
+    pos_color = matplotlib.colors.ColorConverter.to_rgb("teal")
+    pos_rgbs = ['rgb'+str(scale_lightness(pos_color, scale * 10)) for scale in np.arange(0.15, 0.1, -0.005)]
+
+    neg_color = matplotlib.colors.ColorConverter.to_rgb("darkred")
+    neg_rgbs = ['rgb'+str(scale_lightness(neg_color, scale * 10)) for scale in np.arange(0.15, 0.1, -0.005)]
+
+
+    index = 0
+    for edge in G.edges:
+
+        x0, y0 = G.nodes[edge[0]]['pos']
+        x1, y1 = G.nodes[edge[1]]['pos']
+        weight = G.edges[edge]['weight']
+
+        trace = go.Scatter(x=tuple([x0, x1, None]), y=tuple([y0, y1, None]),
+                           mode='lines',
+                           line={'width': abs(weight)*25},
+                        #    marker = dict(color= 'teal' if weight >0 else 'darkred'),
+                           marker=dict(color= pos_rgbs[int(round(weight*10, 0))] if weight > 0 else neg_rgbs[int(round((-weight)*10, 0))]),
+                           line_shape='spline',
+                           opacity=1)
+
+        traceRecode.append(trace)
+        index = index + 1
+
+    ############################################################################################################################################################
+    node_color_list = ['rgb(222,165,164)', 'rgb(201,222,207)','rgb(249,221,124)', 'rgb(211,175,213)', 'rgb(195,226,223)', 'rgb(178,219,186)','rgb(247,180,190)']
+    partition = community_louvain.best_partition(G, resolution=gamma)
+    node_trace = go.Scatter(x=[], y=[], hovertext=[], text=[], mode='markers+text', textposition="bottom center",
+                            hoverinfo="text", marker={'size': 25, 'color': []})
+
+    index = 0
+    for node in G.nodes():
+        x, y = G.nodes[node]['pos']
+        # ex: Anxiety: 긴장 표시용 일단은 필요 X
+        # hovertext = "Attribute Name: " + str(G.nodes[node]['Evaluation item'])
+        # node_trace['hovertext'] += tuple([hovertext])
+
+        # text = node1['Account'][index]
+        node_trace['x'] += tuple([x])
+        node_trace['y'] += tuple([y])
+        node_trace['text'] += tuple([node])
+        # node_trace['marker']['color'] += tuple([node_color_list[2]])
+        node_trace['marker']['color'] += tuple([node_color_list[partition[node]]])
+
+        index = index + 1
+    
+    traceRecode.append(node_trace)       
+
+
+    ################################################################################################################################################################
+    middle_hover_trace = go.Scatter(x=[], y=[], hovertext=[], mode='markers', hoverinfo="text",
+                                    marker={'size': 20, 'color': 'LightSkyBlue'},
+                                    opacity=0)
+
+    index = 0
+    for edge in G.edges:
+        x0, y0 = G.nodes[edge[0]]['pos']
+        x1, y1 = G.nodes[edge[1]]['pos']
+        hovertext = "From: " + str(G.edges[edge]['source']) +  "<br>" + "To   : " + str(G.edges[edge]['target']) + "<br>" + "correlation: " + str(G.edges[edge]['weight'])
+
+        middle_hover_trace['x'] += tuple([(x0 + x1) / 2])
+        middle_hover_trace['y'] += tuple([(y0 + y1) / 2])
+        middle_hover_trace['hovertext'] += tuple([hovertext])
+        index = index + 1
+
+    traceRecode.append(middle_hover_trace)
+
+
+    #################################################################################################################################################################
+    figure = {
+        "data": traceRecode,
+        "layout": go.Layout
+            (
+                title='Gaussian Graphical Model Network Analysis', showlegend=False, hovermode='closest',
+                margin={'b': 40, 'l': 40, 'r': 40, 't': 40},
+                xaxis={'showgrid': False, 'zeroline': False, 'showticklabels': False},
+                yaxis={'showgrid': False, 'zeroline': False, 'showticklabels': False},
+                height=600,
+                clickmode='event+select',
+            )
+        }
+    # print(type(figure))
+    # print("끝")
+    return figure
 
 
 # 중심성 계산 함수
@@ -458,7 +607,7 @@ def lamSet(df):
     lamMaxX = math.log(lamMax)
     lamMinX = math.log(lamMin)
     
-    lam = np.exp(np.append(np.arange(lamMinX, lamMaxX, step = ((lamMaxX)-(lamMinX))/99), (lamMaxX)))
+    lam = np.exp(np.append(np.arange(lamMinX, lamMaxX, step = ((lamMaxX)-(lamMinX))/9), (lamMaxX)))
     
     return lam
 # output (lam) : lambda 값 list
@@ -495,15 +644,15 @@ def compute_Best_Alpha(X, gamma = 0.1):
     p=X.shape[1] #data 열 개수
     
     lam = lamSet(triu) # lambda list 계산 값 100개
-    EBICs = np.zeros(100) # lambda 개수(100개)만큼 EBIC 값 계산해주기 위해 자리 만듦
+    EBICs = np.zeros(10) # lambda 개수(100개)만큼 EBIC 값 계산해주기 위해 자리 만듦
         
     # EBIC 계산을 위함, lambda 100개에 대하여 계산해야 하므로 100번 반복
-    for i in range(100):
+    for i in range(10):
         alpha = round(lam[i], 9)
         model = QuicGraphicalLassoEBIC(lam=alpha, auto_scale = True,
                                            verbose=1, tol = 1e-04,
                                            init_method='spearman', path=100, gamma = gamma, 
-                                           max_iter=10000, method='quic').fit(X.values)
+                                           max_iter=100, method='quic').fit(X.values)
         
         # lambda 100개에 대해 EBIC 값 계산
         EBIC = compute_EBIC(model, n, p, tr, gamma)
@@ -528,8 +677,9 @@ def cov2cor( cov ):
 # output (cor) : cor dataframe
 ####################################################
 
+
 # attribute matrix를 GGM matrix로 만들어주는 함수
-def attr_to_ggm(contents, filename, gamma):
+def attr_to_ggm(contents, filename, gamma=0.1):
     content_type, content_string = contents.split(",")
     decoded = base64.b64decode(content_string)
 
@@ -587,15 +737,17 @@ def make_ggm_table(ggm_matrix=raw_v2):
     '''
     # save_df = ggm_matrix.copy()
     # print(ggm_matrix.columns)
-    if 'Attr' not in ggm_matrix.columns:
-         ggm_matrix.insert(0, 'Attr', ggm_matrix.columns, allow_duplicates=False)
+    # if 'Attr' not in ggm_matrix.columns:
+    #      ggm_matrix.insert(0, 'Attr', ggm_matrix.columns, allow_duplicates=False)
          
     return (html.Div(
         [
+            
             dcc.Download(id="corr-matrix-download"),
             # html.Label("The Result of Gaussian Graphical Model Analaysis", style={'font-size': 30, 'font-weight': True}),
             # html.Button("Save Matrix as CSV", id="corr-matrix-save-button"),
             # html.Button("Save Matrix as XLSX", id="xlsx-corr-matrix-save-button"),
+            dcc.Store(id='memory-ggm'),
             dash_table.DataTable(
                 id = "corr-table",
                 columns=[{"name": str(i), "id": str(i)} for i in ggm_matrix.columns],
@@ -605,6 +757,7 @@ def make_ggm_table(ggm_matrix=raw_v2):
                     'height': 'auto',
                 },
                 export_format= "csv",
+                
             ),
 
         ],
@@ -644,13 +797,205 @@ def make_heatmap(ggm_matrix = raw_v2):
     ))
 
     fig.update_layout(
-        # title = {
-        #     "text": "Heatmap of Correlation",
-        #     "x": 0.52,
-        # },
+        title = {
+            "text": "Heatmap of Correlation",
+            "x": 0.52,
+        },
         # font-size = 30
-        height = 800,
+        height = 600
         # xaxis_nticks = 36
     )
-
+    # fig.update_xaxes(side="top")
     return fig
+
+
+
+
+
+
+
+### 1st edition 네트워크 분석 함수 만들기
+# def generate_network_graph(target_df = raw_df, layout="spring", specific_attr=None):
+#     '''
+#     target_df(pandas dataframe) -> plotly.go
+#     '''
+    
+#     target_df = round(target_df, 2)
+#     attrSet = set(list(target_df['source']))
+    
+#     # networkx layout 배치를위한 중심점 정의
+#     shells = []
+
+#     shell1 = [] #specific_attr을 위한 리스트
+
+#     #specific_attr 있으면 추가
+#     if specific_attr != None:
+#         shell1.append(specific_attr)
+#     shells.append(shell1)
+
+
+#     shell2 = [] #specific_attr을 제외한 요소를 위한 리스트
+
+#     # specific_attr와 다른 요소 추가
+#     for elem in attrSet:
+#         if elem != specific_attr:
+#             shell2.append(elem)
+#     shells.append(shell2)
+
+
+#     G = nx.from_pandas_edgelist(target_df, 'source', 'target', ['source', 'target', 'weight'], create_using=nx.Graph())
+    
+
+#     if specific_attr != None:
+#         pos = nx.drawing.layout.shell_layout(G, shells)
+#     else:
+#         if layout == "spring": 
+#             pos = nx.drawing.layout.spring_layout(G)
+#         elif layout == "kamda_kawai":
+#             pos = nx.drawing.layout.kamada_kawai_layout(G)
+#         elif layout == "spectral":
+#             pos = nx.drawing.layout.spectral_layout(G)
+#         elif layout == "spiral":
+#             pos = nx.drawing.layout.spiral_layout(G)
+#         elif layout == "circular":
+#             pos = nx.drawing.layout.circular_layout(G)
+#         else:
+#             pos = nx.drawing.layout.spring_layout(G)
+
+#     # print(G.nodes)
+#     for node in G.nodes:
+#         # print(node)
+#         G.nodes[node]['pos'] = list(pos[node])
+
+#     # shell2: specific_attr을 제외한 요소를 위한 리스트
+#     if len(shell2) == 0:
+#         traceRecode = [] # contains edge_trace, node_trace, middle_node_trace
+#         node_trace = go.Scatter(x=tuple([1]), y=tuple([1]), 
+#                                 text=tuple([str(specific_attr)]), 
+#                                 textposition="bottom center",
+#                                 mode= "markers+text",
+#                                 marker={'size': 25, 'color': 'LightSkyBlue'},
+#                                 opacity = 0)
+#         traceRecode.append(node_trace)
+
+#         node_trace1 = go.Scatter(x=tuple([1]), y=tuple([1]),
+#                                 mode='markers',
+#                                 marker={'size': 25, 'color': 'LightSkyBlue'},
+#                                 opacity=0)
+#         traceRecode.append(node_trace1)
+
+#         figure = {
+#             "data": traceRecode,
+#             "layout": go.Layout(title='Network Analaysis Applied Search', showlegend=False,
+#                                 margin={'b': 40, 'l': 40, 'r': 40, 't': 40},
+#                                 xaxis={'showgrid': False, 'zeroline': False, 'showticklabels': False},
+#                                 yaxis={'showgrid': False, 'zeroline': False, 'showticklabels': False},
+#                                 height=600
+#                                 )}
+#         return figure
+        
+
+
+#     traceRecode = []  # contains edge_trace, node_trace, middle_node_trace
+#     ############################################################################################################################################################
+#     # pos_colors = list(Color('DarkBlue').range_to(Color('SkyBlue'), 3))
+#     # pos_colors = ['rgb'+str(x.rgb) for x in pos_colors]
+
+#     # neg_colors = list(Color('OrangeRed').range_to(Color('DarkRed'), 3))
+#     # neg_colors = ['rgb'+str(x.rgb) for x in neg_colors]
+#     # colors = ['rgb' + str(x.rgb) for x in colors]
+
+
+#     # color = matplotlib.colors.ColorConverter.to_rgb("navy")
+#     # rgbs = [scale_lightness(color, scale) for scale in [0, .5, 1, 1.5, 2]]
+
+#     def scale_lightness(rgb, scale_l):
+#         # convert rgb to hls
+#         h, l, s = colorsys.rgb_to_hls(*rgb)
+#         # manipulate h, l, s values and return as rgb
+#         return colorsys.hls_to_rgb(h, min(1, l * scale_l), s = s)
+
+#     pos_color = matplotlib.colors.ColorConverter.to_rgb("teal")
+#     pos_rgbs = ['rgb'+str(scale_lightness(pos_color, scale * 10)) for scale in np.arange(0.15, 0.1, -0.005)]
+
+#     neg_color = matplotlib.colors.ColorConverter.to_rgb("darkred")
+#     neg_rgbs = ['rgb'+str(scale_lightness(neg_color, scale * 10)) for scale in np.arange(0.15, 0.1, -0.005)]
+
+
+#     index = 0
+#     for edge in G.edges:
+
+#         x0, y0 = G.nodes[edge[0]]['pos']
+#         x1, y1 = G.nodes[edge[1]]['pos']
+#         weight = G.edges[edge]['weight']
+
+#         trace = go.Scatter(x=tuple([x0, x1, None]), y=tuple([y0, y1, None]),
+#                            mode='lines',
+#                            line={'width': abs(weight)*25},
+#                         #    marker = dict(color= 'teal' if weight >0 else 'darkred'),
+#                            marker=dict(color= pos_rgbs[int(round(weight*10, 0))] if weight > 0 else neg_rgbs[int(round((-weight)*10, 0))]),
+#                            line_shape='spline',
+#                            opacity=1)
+
+#         traceRecode.append(trace)
+#         index = index + 1
+
+#     ############################################################################################################################################################
+#     node_color_list = ['rgb(222,165,164)', 'rgb(201,222,207)','rgb(249,221,124)', 'rgb(211,175,213)', 'rgb(195,226,223)', 'rgb(178,219,186)','rgb(247,180,190)']
+#     partition = community_louvain.best_partition(G)
+#     node_trace = go.Scatter(x=[], y=[], hovertext=[], text=[], mode='markers+text', textposition="bottom center",
+#                             hoverinfo="text", marker={'size': 25, 'color': []})
+
+#     index = 0
+#     for node in G.nodes():
+#         x, y = G.nodes[node]['pos']
+#         # ex: Anxiety: 긴장 표시용 일단은 필요 X
+#         # hovertext = "Attribute Name: " + str(G.nodes[node]['Evaluation item'])
+#         # node_trace['hovertext'] += tuple([hovertext])
+
+#         # text = node1['Account'][index]
+#         node_trace['x'] += tuple([x])
+#         node_trace['y'] += tuple([y])
+#         node_trace['text'] += tuple([node])
+#         node_trace['marker']['color'] += tuple([node_color_list[partition[node]]])
+        
+#         index = index + 1
+    
+#     traceRecode.append(node_trace)       
+
+
+#     ################################################################################################################################################################
+#     middle_hover_trace = go.Scatter(x=[], y=[], hovertext=[], mode='markers', hoverinfo="text",
+#                                     marker={'size': 20, 'color': 'LightSkyBlue'},
+#                                     opacity=0)
+
+#     index = 0
+#     for edge in G.edges:
+#         x0, y0 = G.nodes[edge[0]]['pos']
+#         x1, y1 = G.nodes[edge[1]]['pos']
+#         hovertext = "From: " + str(G.edges[edge]['source']) +  "<br>" + "To   : " + str(G.edges[edge]['target']) + "<br>" + "correlation: " + str(G.edges[edge]['weight'])
+
+#         middle_hover_trace['x'] += tuple([(x0 + x1) / 2])
+#         middle_hover_trace['y'] += tuple([(y0 + y1) / 2])
+#         middle_hover_trace['hovertext'] += tuple([hovertext])
+#         index = index + 1
+
+#     traceRecode.append(middle_hover_trace)
+
+
+#     #################################################################################################################################################################
+#     figure = {
+#         "data": traceRecode,
+#         "layout": go.Layout
+#             (
+#                 # title='Gaussian Graphical Model Network Analysis', showlegend=False, hovermode='closest',
+#                 margin={'b': 40, 'l': 40, 'r': 40, 't': 40},
+#                 xaxis={'showgrid': False, 'zeroline': False, 'showticklabels': False},
+#                 yaxis={'showgrid': False, 'zeroline': False, 'showticklabels': False},
+#                 height=600,
+#                 clickmode='event+select',
+#             )
+#         }
+#     # print(type(figure))
+#     # print("끝")
+#     return figure

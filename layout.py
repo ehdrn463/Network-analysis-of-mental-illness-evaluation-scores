@@ -8,6 +8,8 @@ from lib import make_graph as mg
 from textwrap import dedent as d
 
 import dash_bootstrap_components as dbc
+import dash_core_components as dcc
+import dash_html_components as html
 
 ###################### Style Sheet ###################
 # the style arguments for the sidebar.
@@ -85,103 +87,117 @@ corr_file_uploads = html.Div([
     html.Div(id='output-corr-file-upload'),    
 ])
 
+control_community_detection = html.Div(
+    className="twelve columns",
+    children=[
+        dcc.Markdown(d("""
+        **Community Detection**.
+        """)),
+        dcc.Input(id="gamma-community", 
+                    type="number",
+                 ),
+                    # placeholder=1.0),
+        html.Button('적용', id="community-applied-btn"),
+    ],
+    style={'textAlign': 'center'}
+)
+
+control_network_layout = html.Div([
+    dcc.Markdown(d("""
+    **Network Analysis Style**
+    """), style={'text-align': 'center'}),
+    dcc.Dropdown(
+        id='dropdown-graph',
+        options = [ 
+            {
+                'label': 'spring (default)',
+                'value': 'spring',
+            }, 
+            {
+                'label': 'kamada_kawai',
+                'value': 'kamada_kawai',
+            }, 
+            {
+                'label': 'spectral',
+                'value': 'spectral',
+            }, 
+            {
+                'label': 'spiral',
+                'value': 'spiral',
+            },
+            {
+                'label': 'circular',
+                'value': 'circular',
+            },
+        ],
+        value = 'spring',
+        multi = False,
+    )
+])  
+
+control_EBIC_gamma = html.Div([
+    dcc.Markdown(d("""
+    **EBIC: gamma**
+    """), style={'text-align': 'center'}),
+    dcc.Dropdown(
+        id='dropdown-gamma',
+        options = [ 
+            {
+                'label': '0.01',
+                'value': 0.01
+            }, 
+            {
+                'label': '0.1 (Default)',
+                'value': 0.1,
+            }, 
+            {
+                'label': '0.5',
+                'value': 0.5
+            },
+        ],
+        value = 0.1,
+        multi = False,
+    )
+])
+
+control_search = html.Div(
+    className="twelve columns",
+    children=[
+        dcc.Markdown(d("""
+        **Attribute to Search**.
+        """)),
+        dcc.Input(id="search-node", 
+                    type="text"), #, placeholder="Attribute"
+        html.Button('Search', id="search-btn"),
+        html.Button('Reset', id="reset-btn")
+    ],
+    style={'textAlign': 'center'}
+)
+
+
+control_graph_aspect = html.Div(
+    [
+        dbc.Button(
+        id='refresh-button',
+        n_clicks=0,
+        children="Refresh Graph Aspect",
+        color='primary',
+        block=True
+        )
+    ]
+)
+
 controls = dbc.FormGroup(
     [    
-        dcc.Markdown(d("""
-        **Network Analysis Style**
-        """), style={'text-align': 'center'}),
-        dcc.Dropdown(
-            id='dropdown-graph',
-            options = [ 
-                {
-                    'label': 'spring (default)',
-                    'value': 'spring',
-                }, 
-                {
-                    'label': 'kamada_kawai',
-                    'value': 'kamada_kawai',
-                }, 
-                {
-                    'label': 'spectral',
-                    'value': 'spectral',
-                }, 
-                {
-                    'label': 'spiral',
-                    'value': 'spiral',
-                },
-                {
-                    'label': 'circular',
-                    'value': 'circular',
-                },
-                # {
-                #     'label': 'shell',
-                #     'value': 'shell'
-                # }
-            ],
-            value = 'spring',
-            multi = False,
-        ),           
+        control_community_detection,
         html.Br(),
-        # html.P('gamma', style = {
-        #     'textAlign': 'center'
-        # }),
-        dcc.Markdown(d("""
-        **EBIC: gamma**
-        """), style={'text-align': 'center'}),
-        dcc.Dropdown(
-            id='dropdown-gamma',
-            options = [ 
-                {
-                    'label': '0.01',
-                    'value': 0.01
-                }, 
-                {
-                    'label': '0.1 (Default)',
-                    'value': 0.1,
-                }, 
-                {
-                    'label': '0.5',
-                    'value': 0.5
-                },
-            ],
-            value = 0.1,
-            multi = False,
-        ),
+        control_network_layout,
         html.Br(),
-        html.Div(
-            className="twelve columns",
-            children=[
-                dcc.Markdown(d("""
-                **Attribute to Search**.
-                """)),
-                dcc.Input(id="search-node", 
-                          type="text"), #, placeholder="Attribute"
-                html.Button('Search', id="search-btn"),
-                html.Button('Reset', id="reset-btn")
-            ],
-            style={'textAlign': 'center'}
-        ),
+        control_EBIC_gamma,
         html.Br(),
-        html.Div(
-            [
-                dbc.Button(
-                id='refresh-button',
-                n_clicks=0,
-                children="Refresh Graph Aspect",
-                color='primary',
-                block=True
-                )
-            ]
-        ),
-        # html.Button(
-        #     'Refresh Graph Aspect',
-        #     id='submit_button',
-        #     n_clicks=0,
-        #     style = {
-        #         'color': 'skyblue',
-        #         'text-align': 'center',
-        #     }
-        # )
+        control_search,
+        html.Br(),
+        control_graph_aspect,
     ]
 )
 
@@ -208,7 +224,6 @@ content_first_row = dbc.Row([
         dcc.Graph(id='network_graph',
                   figure = mg.generate_network_graph()), md=12,
     )
-    
 ])
 
 content_second_row = dbc.Row(
@@ -248,23 +263,42 @@ content_second_row = dbc.Row(
 
 )
 
-content_third_row = dbc.Row(
+content_row_ggm = dbc.Row([
+    dbc.Col(
+        dcc.Graph(
+            id='network_graph',
+            figure = mg.generate_network_graph()
+        ), 
+        style ={
+            'width': '50vh',
+            # 'height': '50vh'
+        }
+    ),
     dbc.Col(
         dcc.Graph(
             figure=mg.make_heatmap(),
             id = "heatmap_graph"
         ),
-        md=12,
+        style ={
+            'width': '50vh',
+            # 'height': '50vh'
+        }
     ),
-)
+],
+style ={
+    'height': '600px',
+})
 
 
-content_fourth_row = dbc.Row(
-    children = [
-        mg.make_ggm_table()
-    ],
-    id="ggm_table"
-)
+content_row_ggmtable = html.Div([
+    dbc.Row(
+        children = [
+            # dcc.Store(id='memory-ggm'),
+            mg.make_ggm_table()
+        ],
+        id="ggm_table"
+    )
+])
 
 
 
@@ -273,17 +307,23 @@ content = html.Div(
     [
         html.H2('Network analysis of mental illness evaluation scores', style=TEXT_STYLE),
         html.Hr(),
-        html.H3('Gaussian Graphicl Model Network Analysis', style=TEXT_STYLE),
-        content_first_row,
-        html.Hr(),
+        html.H3('Gaussian Graphical Model Network Analysis', style=TEXT_STYLE),
+        content_row_ggm,
+
+
         html.H3('Centrality Analysis', style=TEXT_STYLE),
-        content_second_row,
+        html.H3('The Result of Gaussian Graphical Model Analaysis', style=TEXT_STYLE),
+        content_row_ggmtable,
         html.Hr(),
         html.H3('Heatmap of Correlation', style=TEXT_STYLE),
-        content_third_row,
         html.Hr(),
-        html.H3('The Result of Gaussian Graphical Model Analaysis', style=TEXT_STYLE),
-        content_fourth_row
+        
+        # content_first_row,
+        # html.Hr(),
+        # html.H3('Centrality Analysis', style=TEXT_STYLE),
+        # content_second_row,
+        # html.Hr(),
+
     ],
     style = CONTENT_STYLE
 )
