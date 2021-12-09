@@ -153,35 +153,50 @@ control_network_layout = html.Div([
     )
 ])  
 
-control_EBIC_gamma = html.Div([
-    dcc.Markdown(d("""
-    **EBIC: gamma**
-    """), style={'text-align': 'center'}),
-    dcc.Dropdown(
-        id='ebic-gamma',
-        style={
-            'width': '90%',
-            'margin-left': 'auto',
-            'margin-right': 'auto',
-        },
-        options = [ 
-            {
-                'label': '0.01',
-                'value': 0.01
-            }, 
-            {
-                'label': '0.1 (Default)',
-                'value': 0.1,
-            }, 
-            {
-                'label': '0.5',
-                'value': 0.5
-            },
+control_EBIC_gamma = html.Div(
+    children = [
+        html.Div(
+        className="twelve columns",
+        children=[
+            dcc.Markdown(d("""
+            **EBIC: gamma**
+            """)),
+            dcc.Input(id="ebic-gamma", 
+                        type="number",
+                    ),
+                        # placeholder=1.0),
+            html.Button('적용', id="ebic-gamma-btn"),
         ],
-        value = 0.1,
-        multi = False,
-    )
-])
+        style={'textAlign': 'center'}
+        )
+    ]
+)
+
+    # dcc.Dropdown(
+    #     id='ebic-gamma',
+    #     style={
+    #         'width': '90%',
+    #         'margin-left': 'auto',
+    #         'margin-right': 'auto',
+    #     },
+    #     options = [ 
+    #         {
+    #             'label': '0.01',
+    #             'value': 0.01
+    #         }, 
+    #         {
+    #             'label': '0.1 (Default)',
+    #             'value': 0.1,
+    #         }, 
+    #         {
+    #             'label': '0.5',
+    #             'value': 0.5
+    #         },
+    #     ],
+    #     value = 0.1,
+    #     multi = False,
+    # )
+
 
 control_search = html.Div(
     className="twelve columns",
@@ -227,7 +242,7 @@ control_centrality = html.Div([
                 'value': 'degree',
             }, 
             {
-                'label': '           strength (default)',
+                'label': 'strength (default)',
                 'value': 'strength',
             }, 
             {
@@ -273,11 +288,11 @@ controls = dbc.FormGroup(
     [    
         control_community_detection,
         html.Br(),
-        control_centrality,
-        html.Br(),
         control_network_layout,
         html.Br(),
         control_EBIC_gamma,
+        html.Br(),
+        control_centrality,
         html.Br(),
         control_search,
         html.Br(),

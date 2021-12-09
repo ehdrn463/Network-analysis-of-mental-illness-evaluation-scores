@@ -147,11 +147,12 @@ def visualize_centrality(input_centrality, memory_ggm, centrality):
 # 5. Convert EBIC graphical Lasso
 @app.callback(
     [Output('network_graph', 'figure'), Output('heatmap_graph', "figure"), Output('centrality_graph', 'figure'), Output('memory-ggm', 'data')],
-    [Input('upload-file', 'contents'), Input('upload-file', 'filename'), Input('upload-corr-file', 'contents'), Input('upload-corr-file', 'filename'), Input('ebic-gamma','value'), Input('dropdown-graph', 'value')],
+    [Input('ebic-gamma-btn', 'n_clicks'), Input('upload-file', 'contents'), Input('upload-file', 'filename'), Input('upload-corr-file', 'contents'), Input('upload-corr-file', 'filename'), Input('ebic-gamma','value'), Input('dropdown-graph', 'value')],
     [State('ebic-gamma', 'value'), State('dropdown-graph', 'value')]
 )
-def convert_ebic_gamma(contents, filename, contents2, filename2, input_ebic_gamma, input_layout, ebic_gamma, layout):
-    if ebic_gamma is None:
+def convert_ebic_gamma(n_clicks, contents, filename, contents2, filename2, input_ebic_gamma, input_layout, ebic_gamma, layout):
+    
+    if (n_clicks is None) or (ebic_gamma is None):
         raise PreventUpdate
 
     if (contents is None) and (contents2 is None):
