@@ -42,56 +42,69 @@ CARD_TEXT_STYLE = {
 
 
 ############### Control Bar ####################3
-file_uploads = html.Div([
-    dcc.Upload(
-        children = html.Div([
-            'Attribute Matrix'
-        ]),
-        style={
-            'width': '90%',
-            'height': '60px',
-            'lineHeight': '60px',
-            'borderWidth': '1px',
-            'borderStyle': 'dashed',
-            'borderRadius': '5px',
-            'textAlign': 'center',
-            'margin': '10px'
-        },
-        # Allow multiple files to be uploaded
-        multiple=False,
-        id='upload-file',
-    ),
-    html.Div(id='output-file-upload'),
-]) 
+file_uploads = html.Div(
+    [
+        dcc.Upload(
+            dbc.Button(
+                [
+                    dbc.Button('Upload Data', color="secondary"),
+                ],
+                className="d-grid gap-2",
+                style={
+                    'width': '80%',
+                    'height': '60%',
+                    'margin': '10px',
+                    'margin-left': '35px',
+                    # 'lineHeight': '60px',
+                    'borderRadius': '5px',
+                    'textAlign': 'center',
+                },
+            ),
+            # Allow multiple files to be uploaded
+            multiple=False,
+            id='upload-file',
+
+        ),
+        html.Div(id='output-file-upload'),
+    ],
+    style={
+        'margin-left': 'auto',
+        'margin-right': 'auto',
+    }
+) 
 
 
-corr_file_uploads = html.Div([
-    dcc.Upload(
-        html.Div([
-            'Correlation Matrix'
-        ]),
-        style={
-            'width': '90%',
-            'height': '60px',
-            'lineHeight': '60px',
-            'borderWidth': '1px',
-            'borderStyle': 'dashed',
-            'borderRadius': '5px',
-            'textAlign': 'center',
-            'margin': '10px'
-        },
-        # Allow multiple files to be uploaded
-        multiple=False,
-        id='upload-corr-file'
-    ),
-    html.Div(id='output-corr-file-upload'),    
-])
+corr_file_uploads = html.Div(
+    [
+        dcc.Upload(
+            dbc.Button(
+                [
+                    dbc.Button("Upload Networ Matrix", color="secondary")
+                ],
+                className="d-grid gap-2",
+                style={
+                    'width': '80%',
+                    'height': '60%',
+                    'margin': '10px',
+                    'margin-left': '35px',
+                    # 'lineHeight': '60px',
+                    'borderRadius': '5px',
+                    'textAlign': 'center',
+                },
+            ),
+            # Allow multiple files to be uploaded
+            multiple=False,
+            id='upload-corr-file'
+        ),
+        html.Div(id='output-corr-file-upload'),    
+    ]
+)
 
 control_community_detection = html.Div(
     className="twelve columns",
     children=[
         dcc.Markdown(d("""
-        **Community Detection**.
+        **Community Detection: gamma**
         """)),
         dcc.Input(id="gamma-community", 
                     type="number",
@@ -108,6 +121,11 @@ control_network_layout = html.Div([
     """), style={'text-align': 'center'}),
     dcc.Dropdown(
         id='dropdown-graph',
+        style={
+            'width': '90%',
+            'margin-left': 'auto',
+            'margin-right': 'auto',
+            },
         options = [ 
             {
                 'label': 'spring (default)',
@@ -140,7 +158,12 @@ control_EBIC_gamma = html.Div([
     **EBIC: gamma**
     """), style={'text-align': 'center'}),
     dcc.Dropdown(
-        id='dropdown-gamma',
+        id='ebic-gamma',
+        style={
+            'width': '90%',
+            'margin-left': 'auto',
+            'margin-right': 'auto',
+        },
         options = [ 
             {
                 'label': '0.01',
@@ -164,7 +187,7 @@ control_search = html.Div(
     className="twelve columns",
     children=[
         dcc.Markdown(d("""
-        **Attribute to Search**.
+        **Attribute to Search**
         """)),
         dcc.Input(id="search-node", 
                     type="text"), #, placeholder="Attribute"
@@ -187,15 +210,78 @@ control_graph_aspect = html.Div(
     ]
 )
 
+control_centrality = html.Div([
+    dcc.Markdown(d("""
+    **Centrality Analysis Style**
+    """), style={'text-align': 'center'}),
+    dcc.Dropdown(
+        id='dropdown-centrality',
+        style={
+            'width': '90%',
+            'margin-left': 'auto',
+            'margin-right': 'auto',
+        },
+        options = [ 
+            {
+                'label': 'degree',
+                'value': 'degree',
+            }, 
+            {
+                'label': '           strength (default)',
+                'value': 'strength',
+            }, 
+            {
+                'label': 'closeness',
+                'value': 'closeness',
+            }, 
+            {
+                'label': 'betweeness',
+                'value': 'betweeness',
+            },
+        ],
+        value = 'strength',
+        multi = False,
+    )
+])  
+
+download_controls = dbc.FormGroup(
+    [
+        dbc.Button(
+            "Save Matrix as CSV", 
+            id="corr-ggm-button",
+            style = {
+                
+            },
+            # className="d-grid gap-2",
+        ),
+        dcc.Download(id="download-csv"),
+        
+        dbc.Button(
+            "Save Matrix as XLSX", 
+            id="xlsx-corr-ggm-button",
+            style = {
+                'margin-left': '15px'
+            },
+            # className="d-grid gap-2",
+        ),
+        dcc.Download(id="download-xlsx")
+    ]
+)
+
+
 controls = dbc.FormGroup(
     [    
         control_community_detection,
+        html.Br(),
+        control_centrality,
         html.Br(),
         control_network_layout,
         html.Br(),
         control_EBIC_gamma,
         html.Br(),
         control_search,
+        html.Br(),
+        download_controls,
         html.Br(),
         control_graph_aspect,
     ]
@@ -209,7 +295,7 @@ sidebar = html.Div(
         html.Hr(),
         html.H2('Parameters', style=TEXT_STYLE),
         html.Hr(),
-        controls
+        controls,
     ],
     style=SIDEBAR_STYLE,
 )
@@ -219,50 +305,6 @@ sidebar = html.Div(
 
 
 ###################### Conten Row ####################
-content_first_row = dbc.Row([
-    dbc.Col(
-        dcc.Graph(id='network_graph',
-                  figure = mg.generate_network_graph()), md=12,
-    )
-])
-
-content_second_row = dbc.Row(
-    [
-        # dbc.Col(
-        #     dcc.Graph(id='centrality_graph',
-        #              figure = mg.network_to_centrality()[0]), 
-        #              md=12,
-                     
-        # ),
-        dbc.Col(
-            dcc.Graph(id='centrality_degree_graph',
-                     figure = mg.network_to_centrality()[1]), 
-                     md=6,
-                     
-        ),
-        dbc.Col(
-            dcc.Graph(id='centrality_weighted_degree_graph',
-                     figure = mg.network_to_centrality()[2]), 
-                     md=6,
-                     
-        ),
-        dbc.Col(
-            dcc.Graph(id='centrality_closeness_graph',
-                     figure = mg.network_to_centrality()[3]), 
-                     md=6,
-                     
-        ),
-        dbc.Col(
-            dcc.Graph(id='centrality_between_graph',
-                     figure = mg.network_to_centrality()[4]), 
-                     md=6,
-                     
-        ),
-    ],
-    # style = { 'height' : '60vh'}
-
-)
-
 content_row_ggm = dbc.Row([
     dbc.Col(
         dcc.Graph(
@@ -284,16 +326,31 @@ content_row_ggm = dbc.Row([
             # 'height': '50vh'
         }
     ),
+    dcc.Store(id='memory-ggm'),
 ],
 style ={
     'height': '600px',
 })
 
 
+content_row_centrality = dbc.Row(
+    [
+        dbc.Col(
+            dcc.Graph(id='centrality_graph',
+                      figure = mg.network_to_centrality()),
+                      md=6,
+        ),
+    ],
+    justify= 'center',
+)
+
+
+
+
+
 content_row_ggmtable = html.Div([
     dbc.Row(
         children = [
-            # dcc.Store(id='memory-ggm'),
             mg.make_ggm_table()
         ],
         id="ggm_table"
@@ -307,22 +364,15 @@ content = html.Div(
     [
         html.H2('Network analysis of mental illness evaluation scores', style=TEXT_STYLE),
         html.Hr(),
+        
         html.H3('Gaussian Graphical Model Network Analysis', style=TEXT_STYLE),
         content_row_ggm,
-
+        html.Hr(),
 
         html.H3('Centrality Analysis', style=TEXT_STYLE),
-        html.H3('The Result of Gaussian Graphical Model Analaysis', style=TEXT_STYLE),
-        content_row_ggmtable,
-        html.Hr(),
-        html.H3('Heatmap of Correlation', style=TEXT_STYLE),
-        html.Hr(),
-        
-        # content_first_row,
-        # html.Hr(),
-        # html.H3('Centrality Analysis', style=TEXT_STYLE),
-        # content_second_row,
-        # html.Hr(),
+        content_row_centrality,
+        html.Br(),
+        # content_row_ggmtable,
 
     ],
     style = CONTENT_STYLE

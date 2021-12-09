@@ -14,11 +14,11 @@ from dash_extensions.snippets import send_bytes
 
 # 1. Data Load: Case1 (attribute)
 @app.callback(
-    [Output('heatmap_graph', "figure"), Output('ggm_table', 'children'), Output('memory-ggm', 'data'),],
+    [Output('heatmap_graph', "figure"), Output('ggm_table', 'children'), Output('memory-ggm', 'data')],
     [Input('upload-file', 'contents'), Input('upload-file', 'filename')]
 )
 def upload_attr(contents, filename):
-    if (not contents):
+    if (contents is None):
         df = pd.read_csv(r'/Users/gimdong-gu/Desktop/mind_detector_v3/Network-analysis-of-mental-illness-evaluation-scores/data/psp_swn_weight_ggg_v2.csv', index_col=0)
     else:
         df = mg.attr_to_ggm(contents, filename)
@@ -35,7 +35,7 @@ def upload_attr(contents, filename):
 def upload_corr(contents, filename):
     df = mg.download_file(contents, filename)
     df = round(df, 3)
-    df_json = df.to_json(orient='table') 
+    df_json = df.to_json(orient='table')
     return mg.make_heatmap(df), mg.make_ggm_table(df), df_json
 
 
@@ -45,11 +45,11 @@ def upload_corr(contents, filename):
     [Input('memory-ggm', 'data')],
     [State('memory-ggm', 'data')]
 )
-def visualize_network(ggm_data, ggm_data2):    
-    if (ggm_data is None) and (ggm_data2 is None):
+def visualize_network_attr(input_ggm_data, ggm_data2):    
+    if (input_ggm_data is None) and (ggm_data2 is None):
         raise PreventUpdate
 
-    ggm_data = pd.read_json(ggm_data, orient='table')
+    ggm_data = pd.read_json(input_ggm_data, orient='table')
     ggm_data2 = pd.read_json(ggm_data2, orient='table')
 
     # source, target, weight matrix로 변환
@@ -65,6 +65,7 @@ def visualize_network(ggm_data, ggm_data2):
     [State('memory-ggm', 'data'), State('gamma-community', 'value')]
 )
 def applied_community(n_clicks, memory_ggm, gamma_community=1.0):
+    print(n_clicks, memory_ggm, gamma_community)
     if n_clicks == 0:
         raise PreventUpdate
     
@@ -77,13 +78,14 @@ def applied_community(n_clicks, memory_ggm, gamma_community=1.0):
     return network_graph_fig
 
 
-# 3-2. Visualize Centrality Analysis
+# 3-2. Convert Network Layout
 @app.callback(
     [Output('network_graph', 'figure')],
     [Input('dropdown-graph', 'value')],
     [State('memory-ggm', 'data'), State('gamma-community', 'value')]
 )
 def change_network_layout(layout, memory_ggm, gamma_community):
+    # print(layout, memory_ggm, gamma_community)
     if memory_ggm is None:
         ggm_data = round(pd.read_csv(r'/Users/gimdong-gu/Desktop/mind_detector_v3/Network-analysis-of-mental-illness-evaluation-scores/data/psp_swn_weight_ggg_v2.csv', index_col=0), 2)
     else:  
@@ -93,7 +95,7 @@ def change_network_layout(layout, memory_ggm, gamma_community):
     if gamma_community is None:
         network_graph_fig = mg.generate_network_graph(target_df)
     else:
-        network_graph_fig = mg.applied_community_detection(target_df, layout=layout, gamma=gamma)
+        network_graph_fig = mg.applied_community_detection(target_df, layout=layout, gamma=gamma_community)
         
     return network_graph_fig
 
@@ -105,6 +107,7 @@ def change_network_layout(layout, memory_ggm, gamma_community):
     [State('memory-ggm', 'data'), State('gamma-community', 'value'), State('search-node','value')]
 )
 def applied_search(n_clicks, memory_ggm, gamma_community, search_node):
+    print(n_clicks, memory_ggm, gamma_community, search_node)
     if n_clicks == 0:
         raise PreventUpdate
 
@@ -120,6 +123,139 @@ def applied_search(n_clicks, memory_ggm, gamma_community, search_node):
         network_graph_fig = mg.applied_community_detection(target_df, specific_attr=search_node, gamma=gamma_community)
         
     return network_graph_fig
+
+
+# 4. Visualize Centrality Analysis
+@app.callback(
+    [Output('centrality_graph', 'figure')],
+    [Input('dropdown-centrality', 'value')],
+    [State('memory-ggm', 'data'), State('dropdown-centrality', 'value')]
+)
+def visualize_centrality(input_centrality, memory_ggm, centrality):
+    # print(input_centrality, memory_ggm, centrality)
+
+    if memory_ggm is None:
+        ggm_data = round(pd.read_csv(r'/Users/gimdong-gu/Desktop/mind_detector_v3/Network-analysis-of-mental-illness-evaluation-scores/data/psp_swn_weight_ggg_v2.csv', index_col=0), 2)
+    else:  
+        ggm_data = pd.read_json(memory_ggm, orient='table')
+    # target_df = mg.corr_to_target(ggm_data)
+
+    centrality_fig = mg.network_to_centrality(target_df=ggm_data, normalized=True, centrality=centrality)
+    return centrality_fig
+
+
+# 5. Convert EBIC graphical Lasso
+@app.callback(
+    [Output('network_graph', 'figure'), Output('heatmap_graph', "figure"), Output('centrality_graph', 'figure'), Output('memory-ggm', 'data')],
+    [Input('upload-file', 'contents'), Input('upload-file', 'filename'), Input('upload-corr-file', 'contents'), Input('upload-corr-file', 'filename'), Input('ebic-gamma','value'), Input('dropdown-graph', 'value')],
+    [State('ebic-gamma', 'value'), State('dropdown-graph', 'value')]
+)
+def convert_ebic_gamma(contents, filename, contents2, filename2, input_ebic_gamma, input_layout, ebic_gamma, layout):
+    if ebic_gamma is None:
+        raise PreventUpdate
+
+    if (contents is None) and (contents2 is None):
+        df = round(pd.read_csv(r'/Users/gimdong-gu/Desktop/mind_detector_v3/Network-analysis-of-mental-illness-evaluation-scores/data/psp_swn_weight_ggg_v2.csv', index_col=0), 2)
+    elif (contents is not None):
+        df = mg.attr_to_ggm(contents, filename, gamma= ebic_gamma)
+    elif (contents2 is not None):
+        df = mg.attr_to_ggm(contents2, filename2, gamma= ebic_gamma)
+    else:
+        df = round(pd.read_csv(r'/Users/gimdong-gu/Desktop/mind_detector_v3/Network-analysis-of-mental-illness-evaluation-scores/data/psp_swn_weight_ggg_v2.csv', index_col=0), 2)
+    
+    df = round(df, 3)
+    df_json = df.to_json(orient='table')
+
+    # source, target, weight matrix로 변환
+    target_df = mg.corr_to_target(df)
+    centrality_fig = mg.network_to_centrality(target_df=df, normalized=True, centrality='strength')
+    network_graph_fig = mg.generate_network_graph(target_df=target_df, layout=layout)
+    heatmap_fig = mg.make_heatmap(df)
+    return network_graph_fig, heatmap_fig, centrality_fig, df_json
+
+
+# 6. Refresh Graph
+@app.callback(
+    [Output('network_graph', 'figure')],
+    [Input('refresh-button', 'n_clicks'), Input('dropdown-graph', 'value')],
+    [State('memory-ggm', 'data'), State('dropdown-graph', 'value')]
+)
+def refresh_graph(n_clicks, input_layout, data, layout):
+    if n_clicks == 0:
+        raise PreventUpdate
+
+    if data is None:
+        ggm_data = round(pd.read_csv(r'/Users/gimdong-gu/Desktop/mind_detector_v3/Network-analysis-of-mental-illness-evaluation-scores/data/psp_swn_weight_ggg_v2.csv', index_col=0), 2)
+    else:
+        ggm_data = pd.read_json(data, orient='table')
+    
+    # source, target, weight matrix로 변환
+    target_df = mg.corr_to_target(ggm_data)
+    network_graph_fig = mg.generate_network_graph(target_df, layout=layout)
+    return network_graph_fig
+
+
+# 7. 저장용
+@app.callback(
+    [Output("download-csv", "data")],
+    [Input("corr-ggm-button", "n_clicks"), Input("xlsx-corr-ggm-button", "n_clicks")],
+    [State("memory-ggm", "data")],
+    prevent_initial_call=True,
+)
+def download_corr_matrix_as_csv(csv_clicks, xlsx_clicks, data):
+    if (not csv_clicks) and (not xlsx_clicks):
+        raise PreventUpdate
+
+    if data is None:
+        df = round(pd.read_csv(r'/Users/gimdong-gu/Desktop/mind_detector_v3/Network-analysis-of-mental-illness-evaluation-scores/data/psp_swn_weight_ggg_v2.csv', index_col=0), 2)
+    else: 
+        df = pd.read_json(data, orient='table')
+
+    # download_buffer = io.StringIO()
+
+    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+    # change_xlsx = [p['xlsx-corr-matrix-save-button'] for p in dash.callback_context.triggered][0]
+    
+    print(type(df))
+    if 'corr-ggm-button.n_clicks' == changed_id:
+        return dcc.send_data_frame(df.to_csv, filename="matrix.csv")
+
+    elif 'xlsx-corr-ggm-button.n_clicks' == changed_id:
+        print(changed_id)
+        return dcc.send_data_frame(df.to_excel, filename="corr_matrix.xlsx")
+
+# @app.callback(
+#     [Output("download-csv", "data"), Output("download-xlsx", "data")],
+#     [Input("corr-ggm-button", "n_clicks"), Input("xlsx-corr-ggm-button", "n_clicks")],
+#     [State("memory-ggm", "data")],
+#     prevent_initial_call=True,
+# )
+# def download_corr_matrix_as_csv(csv_clicks, xlsx_clicks, data):
+#     if (not csv_clicks) and (not xlsx_clicks):
+#         raise PreventUpdate
+
+#     if data is None:
+#         df = round(pd.read_csv(r'/Users/gimdong-gu/Desktop/mind_detector_v3/Network-analysis-of-mental-illness-evaluation-scores/data/psp_swn_weight_ggg_v2.csv', index_col=0), 2)
+#     else: 
+#         df = pd.read_json(data, orient='table')
+
+#     # download_buffer = io.StringIO()
+
+#     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+#     # change_xlsx = [p['xlsx-corr-matrix-save-button'] for p in dash.callback_context.triggered][0]
+    
+#     print(type(df))
+#     if 'corr-ggm-button.n_clicks' == changed_id:
+#         print(changed_id)
+#         # return dcc.send_data_frame(df.to_csv, filename="matrix.csv", index= False)
+#         return dcc.send_data_frame(df.to_csv, filename="matrix.csv")
+#         # df.to_csv(download_buffer, index=False)
+#         # download_buffer.seek(0)
+#         # return dict(content=download_buffer.getvalue(), filename="corr_matrix.csv")
+#     elif 'xlsx-corr-ggm-button.n_clicks' == changed_id:
+#         print(changed_id)
+#         return dcc.send_data_frame(df.to_excel, filename="corr_matrix.xlsx", index= False)
+
 
 
 # @app.callback(
@@ -199,72 +335,6 @@ def applied_search(n_clicks, memory_ggm, gamma_community, search_node):
 #              [Input('dropdown-gamma','value')])
 # def update(reset):
 #     return ;
-
-
-@app.callback(
-    Output("corr-matrix-download", "data"),
-    [Input("corr-matrix-save-button", "n_clicks"), Input("xlsx-corr-matrix-save-button", "n_clicks")],
-    State("corr-table", "data")
-)
-def download_corr_matrix_as_csv(csv_clicks, xlsx_clicks, corr_table_data):
-    df = pd.DataFrame.from_dict(corr_table_data)
-
-    if (not csv_clicks) and (not xlsx_clicks):
-        raise PreventUpdate
-    download_buffer = io.StringIO()
-    temp_columns = ['Attr']
-    for col in df.columns:
-        if col != 'Attr':
-            temp_columns.append(col)
-
-    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-    # change_xlsx = [p['xlsx-corr-matrix-save-button'] for p in dash.callback_context.triggered][0]
-
-    # print(change_xlsx)
-    if 'corr-matrix-save-button.n_clicks' == changed_id:
-        df.to_csv(download_buffer, index=False, columns = temp_columns)
-        download_buffer.seek(0)
-        return dict(content=download_buffer.getvalue(), filename="corr_matrix.csv")
-    elif 'xlsx-corr-matrix-save-button.n_clicks' == changed_id:
-        return dcc.send_data_frame(df.to_excel, filename="corr_matrix.xlsx", index= False)
-
-
-@app.callback(
-    Output("corr-matrix-download", "data"),
-    [Input("corr-matrix-save-button", "n_clicks"), Input("xlsx-corr-matrix-save-button", "n_clicks")],
-    State("corr-table", "data")
-)
-def download_corr_matrix_as_csv(csv_clicks, xlsx_clicks, corr_table_data):
-    df = pd.DataFrame.from_dict(corr_table_data)
-    print('df: ', df.columns)
-
-    if (not csv_clicks) and (not xlsx_clicks):
-        raise PreventUpdate
-    download_buffer = io.StringIO()
-    temp_columns = ['Attr']
-    for col in df.columns:
-        if col != 'Attr':
-            temp_columns.append(col)
-
-    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-    # change_xlsx = [p['xlsx-corr-matrix-save-button'] for p in dash.callback_context.triggered][0]
-
-    # print(change_xlsx)
-    if 'corr-matrix-save-button.n_clicks' == changed_id:
-        print(temp_columns)
-        df.to_csv(download_buffer, index=False, columns = temp_columns)
-        download_buffer.seek(0)
-        return dict(content=download_buffer.getvalue(), filename="corr_matrix.csv")
-    elif 'xlsx-corr-matrix-save-button.n_clicks' == changed_id:
-        return dcc.send_data_frame(df.to_excel, filename="corr_matrix.xlsx", index= False)
-
-
-
-
-
-
-
-
 
 
 # 보관용
