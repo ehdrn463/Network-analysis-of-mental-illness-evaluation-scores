@@ -159,7 +159,7 @@ control_EBIC_gamma = html.Div(
         className="twelve columns",
         children=[
             dcc.Markdown(d("""
-            **EBIC: gamma**
+            **Extended Bayesian Information Criterion : gamma**
             """)),
             dcc.Input(id="ebic-gamma", 
                         type="number",
@@ -167,7 +167,11 @@ control_EBIC_gamma = html.Div(
                         # placeholder=1.0),
             html.Button('적용', id="ebic-gamma-btn"),
         ],
-        style={'textAlign': 'center'}
+        style={
+            'textAlign': 'center',
+            'font-size': '15px',
+        
+        }
         )
     ]
 )
