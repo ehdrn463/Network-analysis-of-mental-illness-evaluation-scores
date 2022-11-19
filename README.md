@@ -1,5 +1,7 @@
 # Network-analysis-of-mental-illness-evaluation-scores
 
+시연영상: https://drive.google.com/file/d/1dX3bTsKShqsX-t2TdwLkRtjShzVF7zOB/view?usp=share_link
+
 <img width="100%" src="https://user-images.githubusercontent.com/41279466/202858006-ee64614e-878e-4159-abcc-ea00f458761b.png"/>
 <img width="100%" src="https://user-images.githubusercontent.com/41279466/202858116-c35db183-0f5a-4cde-af18-7f04366216ff.png"/>
 <img width="100%" src="https://user-images.githubusercontent.com/41279466/202858118-cbfd75ab-1f61-4de7-8d24-2446c9db36f4.png"/>
